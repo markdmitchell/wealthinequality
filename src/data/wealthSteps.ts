@@ -23,8 +23,12 @@ export interface WealthStepInput {
 }
 
 export interface WealthStep extends WealthStepInput {
+  index: number;
   radius: number;
+  /** Centre X. Bodies rest on a shared baseline and nearly touch. */
   x: number;
+  /** Centre Y — every body sits on the plane y = 0. */
+  y: number;
   radiusRatio: number;
   volumeRatio: number;
 }
@@ -33,6 +37,7 @@ export interface WealthStep extends WealthStepInput {
 export const BASE_WEALTH = 192_000;
 export const BASE_RADIUS = 10;
 export const BASE_INDEX = 2;
+
 
 const rawSteps: WealthStepInput[] = [
   {
