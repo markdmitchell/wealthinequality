@@ -42,7 +42,7 @@ export function WealthScale() {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
-  const step = wealthSteps[index];
+  const step = wealthSteps[index] ?? wealthSteps[0]!;
   const total = wealthSteps.length;
 
   const go = useCallback(
