@@ -1,4 +1,4 @@
-import { formatRatio, type WealthStep } from "@/data/wealthSteps";
+import { formatRatio, ratioSentence, wealthSteps, type WealthStep } from "@/data/wealthSteps";
 
 interface Props {
   step: WealthStep;
@@ -8,13 +8,15 @@ interface Props {
 
 export function InfoPanel({ step, index, total }: Props) {
   const barPct = Math.min(100, Math.max(2, (Math.log10(step.wealth) / Math.log10(7.8e12)) * 100));
+  const prev = wealthSteps[index - 1];
+  const vsPrev = ratioSentence(step, prev);
 
   return (
     <section
       aria-live="polite"
       className="rounded-2xl border border-border bg-surface/85 p-5 backdrop-blur-xl sm:p-7"
     >
-      <p className="mb-3 flex items-center gap-2 text-[0.65rem] font-bold uppercase tracking-[0.12em]">
+      <p className="mb-3 flex items-center gap-2 text-[0.65rem] font-bold tracking-[0.12em] uppercase">
         <span
           className="rounded-full border px-2 py-0.5 tabular-nums"
           style={{ color: step.accent, borderColor: step.accent, background: `${step.accent}22` }}
@@ -27,20 +29,26 @@ export function InfoPanel({ step, index, total }: Props) {
         <span aria-hidden className="shrink-0 text-4xl leading-none drop-shadow">
           {step.emoji}
         </span>
-        <h2 className="pt-1 text-lg font-bold leading-tight tracking-tight text-foreground">
+        <h2 className="pt-1 text-lg leading-tight font-bold tracking-tight text-foreground">
           {step.title}
         </h2>
       </div>
 
       <p
-        className="mb-5 font-mono text-[clamp(1.4rem,4vw,2.1rem)] font-bold leading-none tracking-tight"
+        className="mb-5 font-mono text-[clamp(1.4rem,4vw,2.1rem)] leading-none font-bold tracking-tight"
         style={{ color: step.accent }}
       >
         {step.value}
       </p>
 
+      {vsPrev && (
+        <p className="mb-4 border-l-2 pl-3 text-sm leading-snug text-muted-foreground" style={{ borderColor: `${step.accent}66` }}>
+          {vsPrev}
+        </p>
+      )}
+
       <div className="mb-5">
-        <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+        <p className="mb-2 text-[0.68rem] font-semibold tracking-[0.1em] text-muted-foreground uppercase">
           Compared with the median household
         </p>
         <p className="mb-2 text-sm font-semibold text-muted-foreground">

@@ -23,8 +23,12 @@ export interface WealthStepInput {
 }
 
 export interface WealthStep extends WealthStepInput {
+  index: number;
   radius: number;
+  /** Centre X. Bodies rest on a shared baseline and nearly touch. */
   x: number;
+  /** Centre Y — every body sits on the plane y = 0. */
+  y: number;
   radiusRatio: number;
   volumeRatio: number;
 }
@@ -33,6 +37,7 @@ export interface WealthStep extends WealthStepInput {
 export const BASE_WEALTH = 192_000;
 export const BASE_RADIUS = 10;
 export const BASE_INDEX = 2;
+
 
 const rawSteps: WealthStepInput[] = [
   {
@@ -174,6 +179,12 @@ export function calcRadius(wealth: number): number {
   return BASE_RADIUS * Math.cbrt(wealth / BASE_WEALTH);
 }
 
+/**
+ * Shared-baseline layout: every body rests on the plane y = 0 with its centre at
+ * y = radius, and consecutive bodies nearly touch. Because the gap scales with
+ * the *larger* body, the previous step always sits just inside the current
+ * step's frame — which is what makes the size difference readable.
+ */
 function buildSteps(input: WealthStepInput[]): WealthStep[] {
   const out: WealthStep[] = [];
   input.forEach((s, i) => {
@@ -181,14 +192,16 @@ function buildSteps(input: WealthStepInput[]): WealthStep[] {
     let x = 0;
     const p = out[i - 1];
     if (p) {
-      const gap = (radius + p.radius) * 0.5;
+      const gap = radius * 0.12 + p.radius * 0.2;
       x = p.x + p.radius + gap + radius;
     }
 
     out.push({
       ...s,
+      index: i,
       radius,
       x,
+      y: radius,
       radiusRatio: radius / BASE_RADIUS,
       volumeRatio: s.wealth / BASE_WEALTH,
     });
@@ -198,6 +211,12 @@ function buildSteps(input: WealthStepInput[]): WealthStep[] {
 
 export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
 
+/** The median-household Earth: the reference body that is never removed. */
+export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
+
+/** Bodies shown side by side by default in compare mode. */
+export const COMPARE_DEFAULT = [2, 4, 6, 8];
+
 export const LUMINOUS: BodyType[] = ["star", "giant-star", "supergiant"];
 
 export function isLuminous(t: BodyType): boolean {
@@ -205,12 +224,33 @@ export function isLuminous(t: BodyType): boolean {
 }
 
 export function formatRatio(n: number): string {
+  if (n >= 1e12) return `${(n / 1e12).toFixed(1)} trillion×`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} billion×`;
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} million×`;
   if (n >= 1000) return `${Math.round(n).toLocaleString("en-US")}×`;
   if (n >= 10) return `${n.toFixed(0)}×`;
   if (n >= 1) return `${n.toFixed(2)}×`;
   return `1 / ${Math.round(1 / n).toLocaleString("en-US")}`;
 }
+
+/** Compact count, e.g. 41,000 or 3.4 million. */
+export function formatCount(n: number): string {
+  if (n >= 1e12) return `${(n / 1e12).toFixed(1)} trillion`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} billion`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)} million`;
+  if (n >= 1000) return Math.round(n).toLocaleString("en-US");
+  if (n >= 10) return n.toFixed(0);
+  return n.toFixed(1);
+}
+
+/** Ratio between two steps, phrased for the info panel. */
+export function ratioSentence(step: WealthStep, prev?: WealthStep): string | null {
+  if (!prev) return null;
+  const vol = step.wealth / prev.wealth;
+  const rad = step.radius / prev.radius;
+  return `${formatRatio(vol)} the volume of ${prev.title.toLowerCase()} — ${formatRatio(rad)} the radius.`;
+}
+
 
 export interface SourceEntry {
   id: string;
