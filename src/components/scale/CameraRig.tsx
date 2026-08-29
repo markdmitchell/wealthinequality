@@ -22,12 +22,12 @@ export function CameraRig({ step, reducedMotion }: Props) {
   const flying = useRef(true);
   const desired = useRef({
     target: new THREE.Vector3(step.x, 0, 0),
-    dist: step.radius * 3.4,
+    dist: step.radius * 3.9,
   });
 
   useEffect(() => {
     desired.current.target.set(step.x, 0, 0);
-    desired.current.dist = step.radius * 3.4;
+    desired.current.dist = step.radius * 3.9;
     flying.current = true;
 
     const controls = controlsRef.current;
