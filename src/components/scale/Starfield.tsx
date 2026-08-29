@@ -19,11 +19,12 @@ function useStarGeometry(count: number, spread: number) {
       pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       pos[i * 3 + 2] = r * Math.cos(phi);
-      const tint = STAR_TINTS[Math.floor(Math.random() * STAR_TINTS.length)];
+      const tint = STAR_TINTS[Math.floor(Math.random() * STAR_TINTS.length)] ?? [1, 1, 1];
       const b = 0.55 + Math.random() * 0.45;
-      cols[i * 3] = tint[0] * b;
-      cols[i * 3 + 1] = tint[1] * b;
-      cols[i * 3 + 2] = tint[2] * b;
+      cols[i * 3] = (tint[0] ?? 1) * b;
+      cols[i * 3 + 1] = (tint[1] ?? 1) * b;
+      cols[i * 3 + 2] = (tint[2] ?? 1) * b;
+
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
