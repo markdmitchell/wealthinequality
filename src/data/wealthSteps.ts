@@ -1,0 +1,286 @@
+export type BodyType =
+  | "rocky"
+  | "moon"
+  | "earth"
+  | "terrestrial"
+  | "ice"
+  | "gas"
+  | "star"
+  | "giant-star"
+  | "supergiant";
+
+export interface WealthStepInput {
+  title: string;
+  value: string;
+  desc: string;
+  wealth: number;
+  color: number;
+  accent: string;
+  emoji: string;
+  bodyType: BodyType;
+  bgTint: string;
+  source: string;
+}
+
+export interface WealthStep extends WealthStepInput {
+  radius: number;
+  x: number;
+  radiusRatio: number;
+  volumeRatio: number;
+}
+
+/** Median US household net worth — the Earth baseline for the whole scene. */
+export const BASE_WEALTH = 192_000;
+export const BASE_RADIUS = 10;
+export const BASE_INDEX = 2;
+
+const rawSteps: WealthStepInput[] = [
+  {
+    title: "One Dollar",
+    value: "$1",
+    desc: "A single dollar bill. On this cosmic scale, one dollar maps to a small rocky asteroid drifting silently through space.",
+    wealth: 1,
+    color: 0x86efac,
+    accent: "#86efac",
+    emoji: "💵",
+    bodyType: "rocky",
+    bgTint: "#0f190f",
+    source: "unit",
+  },
+  {
+    title: "Two Weeks of Groceries",
+    value: "$3,840",
+    desc: "About two weeks of groceries for a family of four — and more cash than roughly a third of US households could raise in an emergency. In volume, it is our Moon.",
+    wealth: 3840,
+    color: 0xc0c8d8,
+    accent: "#c0c8d8",
+    emoji: "🛒",
+    bodyType: "moon",
+    bgTint: "#121216",
+    source: "usda-fed",
+  },
+  {
+    title: "Median US Household",
+    value: "$192,900",
+    desc: "The median US household net worth. Half of all American families have less than this. Here it becomes the Earth — the baseline for everything that follows.",
+    wealth: BASE_WEALTH,
+    color: 0x3b82f6,
+    accent: "#60a5fa",
+    emoji: "🌍",
+    bodyType: "earth",
+    bgTint: "#050a1c",
+    source: "scf",
+  },
+  {
+    title: "Lamborghini Huracán",
+    value: "$250,000",
+    desc: "One supercar costs more than the median family's entire net worth — everything they own, minus everything they owe. Yet the sphere is only 1.09× wider. That flatness is the point: at human scale, inequality still looks small.",
+    wealth: 250_000,
+    color: 0xf97316,
+    accent: "#fb923c",
+    emoji: "🏎️",
+    bodyType: "terrestrial",
+    bgTint: "#160800",
+    source: "msrp",
+  },
+  {
+    title: "Median US Home",
+    value: "$400,000",
+    desc: "The typical American home sells for more than twice the typical family's entire net worth — and still only a 1.28× wider sphere.",
+    wealth: 400_000,
+    color: 0x22c55e,
+    accent: "#4ade80",
+    emoji: "🏠",
+    bodyType: "terrestrial",
+    bgTint: "#001208",
+    source: "census-hud",
+  },
+  {
+    title: "A Private Island",
+    value: "$5,000,000",
+    desc: "A private island is a luxury so vast it becomes an ice giant — nearly 3× the radius of the Earth you just left behind.",
+    wealth: 5_000_000,
+    color: 0x06b6d4,
+    accent: "#22d3ee",
+    emoji: "🏝️",
+    bodyType: "ice",
+    bgTint: "#000c16",
+    source: "listings",
+  },
+  {
+    title: "Top 1% Household",
+    value: "$13,600,000",
+    desc: "Entering the top 1% takes roughly $13.6M — a ringed gas giant over 4× the radius of the median family's whole net worth.",
+    wealth: 13_600_000,
+    color: 0xa855f7,
+    accent: "#c084fc",
+    emoji: "🎩",
+    bodyType: "gas",
+    bgTint: "#0f001e",
+    source: "scf",
+  },
+  {
+    title: "USAID Annual Budget",
+    value: "$30,000,000,000",
+    desc: "The prior annual budget of USAID funded global development, disaster relief, and diplomacy in more than 100 countries.",
+    wealth: 30_000_000_000,
+    color: 0x10b981,
+    accent: "#34d399",
+    emoji: "🤝",
+    bodyType: "gas",
+    bgTint: "#00120c",
+    source: "usaid",
+  },
+  {
+    title: "The Richest Person",
+    value: "$250,000,000,000",
+    desc: "The world's richest individual. On this scale his wealth becomes the Sun — over a million times the volume of the Earth that stood for the median family.",
+    wealth: 250_000_000_000,
+    color: 0xfbbf24,
+    accent: "#fde68a",
+    emoji: "🚀",
+    bodyType: "star",
+    bgTint: "#160f00",
+    source: "billionaire-index",
+  },
+  {
+    title: "Universal Healthcare",
+    value: "$3,500,000,000,000",
+    desc: "An estimated annual federal cost of single-payer healthcare for every American. A star 3× the Sun's radius.",
+    wealth: 3_500_000_000_000,
+    color: 0xf87171,
+    accent: "#fca5a5",
+    emoji: "🏥",
+    bodyType: "giant-star",
+    bgTint: "#160404",
+    source: "m4a",
+  },
+  {
+    title: "All US Billionaires",
+    value: "$7,800,000,000,000",
+    desc: "The combined wealth of roughly 900 US billionaires. A red supergiant so enormous the Sun is invisible inside it.",
+    wealth: 7_800_000_000_000,
+    color: 0xff4040,
+    accent: "#ff8080",
+    emoji: "👑",
+    bodyType: "supergiant",
+    bgTint: "#140202",
+    source: "forbes",
+  },
+];
+
+/** Volume scales linearly with wealth, so radius scales with the cube root. */
+export function calcRadius(wealth: number): number {
+  return BASE_RADIUS * Math.cbrt(wealth / BASE_WEALTH);
+}
+
+function buildSteps(input: WealthStepInput[]): WealthStep[] {
+  const out: WealthStep[] = [];
+  input.forEach((s, i) => {
+    const radius = calcRadius(s.wealth);
+    let x = 0;
+    if (i > 0) {
+      const p = out[i - 1];
+      const gap = (radius + p.radius) * 0.5;
+      x = p.x + p.radius + gap + radius;
+    }
+    out.push({
+      ...s,
+      radius,
+      x,
+      radiusRatio: radius / BASE_RADIUS,
+      volumeRatio: s.wealth / BASE_WEALTH,
+    });
+  });
+  return out;
+}
+
+export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
+
+export const LUMINOUS: BodyType[] = ["star", "giant-star", "supergiant"];
+
+export function isLuminous(t: BodyType): boolean {
+  return LUMINOUS.includes(t);
+}
+
+export function formatRatio(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} million×`;
+  if (n >= 1000) return `${Math.round(n).toLocaleString("en-US")}×`;
+  if (n >= 10) return `${n.toFixed(0)}×`;
+  if (n >= 1) return `${n.toFixed(2)}×`;
+  return `1 / ${Math.round(1 / n).toLocaleString("en-US")}`;
+}
+
+export interface SourceEntry {
+  id: string;
+  label: string;
+  detail: string;
+  asOf: string;
+}
+
+export const sources: SourceEntry[] = [
+  {
+    id: "scf",
+    label: "Median household net worth · top 1% threshold",
+    detail:
+      "Federal Reserve Survey of Consumer Finances (median net worth $192,900) and Fed Distributional Financial Accounts for the top 1% entry threshold.",
+    asOf: "2022 survey, released 2023",
+  },
+  {
+    id: "usda-fed",
+    label: "Two weeks of groceries",
+    detail:
+      "USDA moderate-cost food plan for a family of four, scaled to two weeks; the emergency-cash comparison uses the Fed's Survey of Household Economics and Decisionmaking.",
+    asOf: "2023–2024",
+  },
+  {
+    id: "msrp",
+    label: "Lamborghini Huracán",
+    detail: "Manufacturer suggested retail price for a base Huracán, rounded.",
+    asOf: "2024 model year",
+  },
+  {
+    id: "census-hud",
+    label: "Median US home price",
+    detail: "Census Bureau / HUD median sales price of houses sold in the United States, rounded.",
+    asOf: "2024",
+  },
+  {
+    id: "listings",
+    label: "Private island",
+    detail: "Representative asking price from private-island brokerage listings; highly variable.",
+    asOf: "2024",
+  },
+  {
+    id: "usaid",
+    label: "USAID annual budget",
+    detail: "USAID appropriated budget authority prior to the agency's restructuring, rounded.",
+    asOf: "FY2023",
+  },
+  {
+    id: "billionaire-index",
+    label: "Richest individual",
+    detail:
+      "Bloomberg Billionaires Index / Forbes real-time net worth. This figure moves by tens of billions week to week.",
+    asOf: "2025 snapshot",
+  },
+  {
+    id: "m4a",
+    label: "Universal healthcare cost",
+    detail:
+      "Mid-range estimate of added annual federal outlays under single-payer, from CBO and Mercatus analyses. Estimates of total national health spending under such a system are lower than current spending in some studies and higher in others.",
+    asOf: "2020–2022 estimates",
+  },
+  {
+    id: "forbes",
+    label: "Combined US billionaire wealth",
+    detail: "Forbes 400 / Americans for Tax Fairness tallies of aggregate US billionaire wealth.",
+    asOf: "2024",
+  },
+  {
+    id: "unit",
+    label: "One dollar",
+    detail: "The unit of the scale.",
+    asOf: "—",
+  },
+];
