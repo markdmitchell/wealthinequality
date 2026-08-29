@@ -206,9 +206,16 @@ function buildSteps(input: WealthStepInput[]): WealthStep[] {
       volumeRatio: s.wealth / BASE_WEALTH,
     });
   });
-
+  return out;
+}
 
 export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
+
+/** The median-household Earth: the reference body that is never removed. */
+export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
+
+/** Bodies shown side by side by default in compare mode. */
+export const COMPARE_DEFAULT = [2, 4, 6, 8];
 
 export const LUMINOUS: BodyType[] = ["star", "giant-star", "supergiant"];
 
@@ -217,12 +224,33 @@ export function isLuminous(t: BodyType): boolean {
 }
 
 export function formatRatio(n: number): string {
+  if (n >= 1e12) return `${(n / 1e12).toFixed(1)} trillion×`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} billion×`;
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} million×`;
   if (n >= 1000) return `${Math.round(n).toLocaleString("en-US")}×`;
   if (n >= 10) return `${n.toFixed(0)}×`;
   if (n >= 1) return `${n.toFixed(2)}×`;
   return `1 / ${Math.round(1 / n).toLocaleString("en-US")}`;
 }
+
+/** Compact count, e.g. 41,000 or 3.4 million. */
+export function formatCount(n: number): string {
+  if (n >= 1e12) return `${(n / 1e12).toFixed(1)} trillion`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} billion`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)} million`;
+  if (n >= 1000) return Math.round(n).toLocaleString("en-US");
+  if (n >= 10) return n.toFixed(0);
+  return n.toFixed(1);
+}
+
+/** Ratio between two steps, phrased for the info panel. */
+export function ratioSentence(step: WealthStep, prev?: WealthStep): string | null {
+  if (!prev) return null;
+  const vol = step.wealth / prev.wealth;
+  const rad = step.radius / prev.radius;
+  return `${formatRatio(vol)} the volume of ${prev.title.toLowerCase()} — ${formatRatio(rad)} the radius.`;
+}
+
 
 export interface SourceEntry {
   id: string;
