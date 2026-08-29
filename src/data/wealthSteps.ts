@@ -179,11 +179,12 @@ function buildSteps(input: WealthStepInput[]): WealthStep[] {
   input.forEach((s, i) => {
     const radius = calcRadius(s.wealth);
     let x = 0;
-    if (i > 0) {
-      const p = out[i - 1];
+    const p = out[i - 1];
+    if (p) {
       const gap = (radius + p.radius) * 0.5;
       x = p.x + p.radius + gap + radius;
     }
+
     out.push({
       ...s,
       radius,
