@@ -11,7 +11,7 @@ interface Props {
   /** Journey mode frames current + previous; compare mode frames a chosen set. */
   compare: number[] | null;
   reducedMotion: boolean;
-  onView?: (viewWidth: number) => void;
+  onView?: ((viewWidth: number) => void) | undefined;
 }
 
 function Scene({ step, compare, reducedMotion, onView }: Props) {

@@ -8,7 +8,7 @@ interface Props {
   /** Bodies that must all be inside the frame. */
   framed: WealthStep[];
   reducedMotion: boolean;
-  onView?: (viewWidth: number) => void;
+  onView?: ((viewWidth: number) => void) | undefined;
 }
 
 type Controls = {
