@@ -36,7 +36,7 @@ export interface WealthStep extends WealthStepInput {
 /** Median US household net worth — the Earth baseline for the whole scene. */
 export const BASE_WEALTH = 192_000;
 export const BASE_RADIUS = 10;
-export const BASE_INDEX = 2;
+export const BASE_INDEX = 1;
 
 
 const rawSteps: WealthStepInput[] = [
@@ -51,18 +51,6 @@ const rawSteps: WealthStepInput[] = [
     bodyType: "rocky",
     bgTint: "#0f190f",
     source: "unit",
-  },
-  {
-    title: "Two Weeks of Groceries",
-    value: "$3,840",
-    desc: "About two weeks of groceries for a family of four — and more cash than roughly a third of US households could raise in an emergency. In volume, it is our Moon.",
-    wealth: 3840,
-    color: 0xc0c8d8,
-    accent: "#c0c8d8",
-    emoji: "🛒",
-    bodyType: "moon",
-    bgTint: "#121216",
-    source: "usda-fed",
   },
   {
     title: "Median US Household",
@@ -215,7 +203,7 @@ export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
 export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
 
 /** Bodies shown side by side by default in compare mode. */
-export const COMPARE_DEFAULT = [2, 4, 6, 8];
+export const COMPARE_DEFAULT = [1, 2, 4, 5];
 
 export const LUMINOUS: BodyType[] = ["star", "giant-star", "supergiant"];
 
