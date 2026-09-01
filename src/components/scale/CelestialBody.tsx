@@ -68,7 +68,9 @@ export function CelestialBody({ step, active, reference = false, animate }: Prop
   });
 
   const segments = step.radius > 100 ? 64 : 48;
-  const labelled = reference || active;
+  // Stagger label lanes so labels stay readable when bodies bunch up on screen.
+  const lane = (step.index % 3) * 26;
+
 
   return (
     <group position={[step.x, step.y, 0]}>
