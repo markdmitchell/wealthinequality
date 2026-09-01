@@ -42,14 +42,14 @@ function Scene({ step, compare, reducedMotion, onView }: Props) {
       {wealthSteps
         .filter((s) => !compare || compare.length === 0 || compare.includes(s.index))
         .map((s) => (
-        <CelestialBody
-          key={s.title}
-          step={s}
-          active={activeSet.has(s.index)}
-          reference={s.index === BASE_INDEX}
-          animate={!reducedMotion}
-        />
-      ))}
+          <CelestialBody
+            key={s.title}
+            step={s}
+            active={activeSet.has(s.index)}
+            reference={s.index === BASE_INDEX}
+            animate={!reducedMotion}
+          />
+        ))}
       <CameraRig framed={framed} reducedMotion={reducedMotion} onView={onView} />
     </>
   );
