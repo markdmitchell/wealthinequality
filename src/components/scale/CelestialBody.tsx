@@ -16,7 +16,7 @@ interface Props {
 /** Below this angular size the body is drawn as a fixed-size marker instead. */
 const MIN_ANGULAR = 0.004;
 
-export function CelestialBody({ step, active, reference = false, animate }: Props) {
+export function CelestialBody({ step, animate }: Props) {
   const fullRef = useRef<THREE.Group>(null);
   const markerRef = useRef<THREE.Group>(null);
   const bodyRef = useRef<THREE.Mesh>(null);
@@ -24,7 +24,6 @@ export function CelestialBody({ step, active, reference = false, animate }: Prop
   const flareRef = useRef<THREE.Sprite>(null);
   const camera = useThree((s) => s.camera);
   const [clamped, setClamped] = useState(false);
-  void clamped;
 
   const luminous = isLuminous(step.bodyType);
   const surface = useMemo(
