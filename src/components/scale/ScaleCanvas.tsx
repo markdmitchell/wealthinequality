@@ -39,7 +39,9 @@ function Scene({ step, compare, reducedMotion, onView }: Props) {
       <directionalLight position={[1, 0.55, 1]} intensity={2.1} />
       <directionalLight position={[-1, -0.3, -0.6]} intensity={0.35} color="#7aa2ff" />
       <Starfield />
-      {wealthSteps.map((s) => (
+      {wealthSteps
+        .filter((s) => !compare || compare.length === 0 || compare.includes(s.index))
+        .map((s) => (
         <CelestialBody
           key={s.title}
           step={s}
