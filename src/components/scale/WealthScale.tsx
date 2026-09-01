@@ -38,7 +38,7 @@ function useWebglSupport() {
 }
 
 export function WealthScale() {
-  const [index, setIndex] = useState(2);
+  const [index, setIndex] = useState(1);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [viewWidth, setViewWidth] = useState(0);

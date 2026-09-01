@@ -36,7 +36,7 @@ export interface WealthStep extends WealthStepInput {
 /** Median US household net worth — the Earth baseline for the whole scene. */
 export const BASE_WEALTH = 192_000;
 export const BASE_RADIUS = 10;
-export const BASE_INDEX = 2;
+export const BASE_INDEX = 1;
 
 
 const rawSteps: WealthStepInput[] = [
@@ -53,18 +53,6 @@ const rawSteps: WealthStepInput[] = [
     source: "unit",
   },
   {
-    title: "Two Weeks of Groceries",
-    value: "$3,840",
-    desc: "About two weeks of groceries for a family of four — and more cash than roughly a third of US households could raise in an emergency. In volume, it is our Moon.",
-    wealth: 3840,
-    color: 0xc0c8d8,
-    accent: "#c0c8d8",
-    emoji: "🛒",
-    bodyType: "moon",
-    bgTint: "#121216",
-    source: "usda-fed",
-  },
-  {
     title: "Median US Household",
     value: "$192,900",
     desc: "The median US household net worth. Half of all American families have less than this. Here it becomes the Earth — the baseline for everything that follows.",
@@ -75,18 +63,6 @@ const rawSteps: WealthStepInput[] = [
     bodyType: "earth",
     bgTint: "#050a1c",
     source: "scf",
-  },
-  {
-    title: "Lamborghini Huracán",
-    value: "$250,000",
-    desc: "One supercar costs more than the median family's entire net worth — everything they own, minus everything they owe. Yet the sphere is only 1.09× wider. That flatness is the point: at human scale, inequality still looks small.",
-    wealth: 250_000,
-    color: 0xf97316,
-    accent: "#fb923c",
-    emoji: "🏎️",
-    bodyType: "terrestrial",
-    bgTint: "#160800",
-    source: "msrp",
   },
   {
     title: "Median US Home",
@@ -123,18 +99,6 @@ const rawSteps: WealthStepInput[] = [
     bodyType: "gas",
     bgTint: "#0f001e",
     source: "scf",
-  },
-  {
-    title: "USAID Annual Budget",
-    value: "$30,000,000,000",
-    desc: "The prior annual budget of USAID funded global development, disaster relief, and diplomacy in more than 100 countries.",
-    wealth: 30_000_000_000,
-    color: 0x10b981,
-    accent: "#34d399",
-    emoji: "🤝",
-    bodyType: "gas",
-    bgTint: "#00120c",
-    source: "usaid",
   },
   {
     title: "The Richest Person",
@@ -215,7 +179,7 @@ export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
 export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
 
 /** Bodies shown side by side by default in compare mode. */
-export const COMPARE_DEFAULT = [2, 4, 6, 8];
+export const COMPARE_DEFAULT = [1, 2, 4, 5];
 
 export const LUMINOUS: BodyType[] = ["star", "giant-star", "supergiant"];
 
@@ -268,19 +232,6 @@ export const sources: SourceEntry[] = [
     asOf: "2022 survey, released 2023",
   },
   {
-    id: "usda-fed",
-    label: "Two weeks of groceries",
-    detail:
-      "USDA moderate-cost food plan for a family of four, scaled to two weeks; the emergency-cash comparison uses the Fed's Survey of Household Economics and Decisionmaking.",
-    asOf: "2023–2024",
-  },
-  {
-    id: "msrp",
-    label: "Lamborghini Huracán",
-    detail: "Manufacturer suggested retail price for a base Huracán, rounded.",
-    asOf: "2024 model year",
-  },
-  {
     id: "census-hud",
     label: "Median US home price",
     detail: "Census Bureau / HUD median sales price of houses sold in the United States, rounded.",
@@ -291,12 +242,6 @@ export const sources: SourceEntry[] = [
     label: "Private island",
     detail: "Representative asking price from private-island brokerage listings; highly variable.",
     asOf: "2024",
-  },
-  {
-    id: "usaid",
-    label: "USAID annual budget",
-    detail: "USAID appropriated budget authority prior to the agency's restructuring, rounded.",
-    asOf: "FY2023",
   },
   {
     id: "billionaire-index",
