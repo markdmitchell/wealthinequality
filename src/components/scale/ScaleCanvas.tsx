@@ -1,6 +1,7 @@
 import { Canvas } from "@react-three/fiber";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { BASE_INDEX, wealthSteps, type WealthStep } from "@/data/wealthSteps";
+import { BodyLabels, type LabelNodes } from "./BodyLabels";
 import { CameraRig } from "./CameraRig";
 import { CelestialBody } from "./CelestialBody";
 import { Starfield } from "./Starfield";
@@ -14,7 +15,12 @@ interface Props {
   onView?: ((viewWidth: number) => void) | undefined;
 }
 
-function Scene({ step, compare, reducedMotion, onView }: Props) {
+interface SceneProps extends Props {
+  visible: WealthStep[];
+  labelNodes: LabelNodes;
+}
+
+function Scene({ step, compare, reducedMotion, onView, visible, labelNodes }: SceneProps) {
   useEffect(() => () => disposeTextureCache(), []);
 
   const framed = useMemo(() => {
@@ -39,32 +45,75 @@ function Scene({ step, compare, reducedMotion, onView }: Props) {
       <directionalLight position={[1, 0.55, 1]} intensity={2.1} />
       <directionalLight position={[-1, -0.3, -0.6]} intensity={0.35} color="#7aa2ff" />
       <Starfield />
-      {wealthSteps
-        .filter((s) => !compare || compare.length === 0 || compare.includes(s.index))
-        .map((s) => (
-          <CelestialBody
-            key={s.title}
-            step={s}
-            active={activeSet.has(s.index)}
-            reference={s.index === BASE_INDEX}
-            animate={!reducedMotion}
-          />
-        ))}
+      {visible.map((s) => (
+        <CelestialBody
+          key={s.title}
+          step={s}
+          active={activeSet.has(s.index)}
+          reference={s.index === BASE_INDEX}
+          animate={!reducedMotion}
+        />
+      ))}
+      <BodyLabels steps={visible} nodes={labelNodes} />
       <CameraRig framed={framed} reducedMotion={reducedMotion} onView={onView} />
     </>
   );
 }
 
 export function ScaleCanvas(props: Props) {
+  const { compare, step } = props;
+  const labelNodes = useRef<LabelNodes>(new Map()).current;
+
+  const visible = useMemo(
+    () =>
+      wealthSteps.filter((s) => !compare || compare.length === 0 || compare.includes(s.index)),
+    [compare],
+  );
+
+  const activeSet = useMemo(
+    () => new Set(compare && compare.length ? compare : [step.index]),
+    [compare, step.index],
+  );
+
   return (
-    <Canvas
-      className="absolute inset-0"
-      dpr={[1, 2]}
-      frameloop="always"
-      gl={{ antialias: true, powerPreference: "high-performance", logarithmicDepthBuffer: true }}
-      camera={{ fov: 42, near: 0.01, far: 50_000_000, position: [0, 14, 44] }}
-    >
-      <Scene {...props} />
-    </Canvas>
+    <div className="absolute inset-0">
+      <Canvas
+        className="absolute inset-0"
+        dpr={[1, 2]}
+        frameloop="always"
+        gl={{ antialias: true, powerPreference: "high-performance", logarithmicDepthBuffer: true }}
+        camera={{ fov: 42, near: 0.01, far: 50_000_000, position: [0, 14, 44] }}
+      >
+        <Scene {...props} visible={visible} labelNodes={labelNodes} />
+      </Canvas>
+
+      {/* Screen-space labels: always on screen, even for off-frame or invisible bodies. */}
+      <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden" aria-hidden>
+        {visible.map((s) => {
+          const active = activeSet.has(s.index);
+          return (
+            <div
+              key={s.title}
+              ref={(el) => {
+                labelNodes.set(s.index, el);
+              }}
+              className="absolute top-0 left-0 whitespace-nowrap text-center will-change-transform"
+            >
+              <span
+                className="rounded-full border px-2 py-0.5 text-[0.6rem] font-bold tracking-[0.08em] uppercase backdrop-blur-sm"
+                style={{
+                  color: s.accent,
+                  borderColor: active ? `${s.accent}cc` : `${s.accent}55`,
+                  background: active ? "rgba(3,5,12,0.88)" : "rgba(3,5,12,0.66)",
+                }}
+              >
+                {s.title}
+              </span>
+              <span className="mt-0.5 block text-[0.55rem] text-white/70">{s.value}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
