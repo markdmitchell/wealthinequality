@@ -164,33 +164,39 @@ export function CelestialBody({ step, active, reference = false, animate }: Prop
         </sprite>
       </group>
 
-      {labelled && (
-        <Html
-          center
-          position={[0, clamped ? 0 : step.radius * 1.1, 0]}
-          zIndexRange={[12, 10]}
-          style={{ pointerEvents: "none" }}
-          wrapperClass="scale-label-wrapper"
+      <Html
+        center
+        position={[0, clamped ? 0 : step.radius * 1.1, 0]}
+        zIndexRange={[12, 10]}
+        style={{ pointerEvents: "none" }}
+        wrapperClass="scale-label-wrapper"
+      >
+        <div
+          className="whitespace-nowrap text-center"
+          style={{ transform: `translateY(-${24 + lane}px)` }}
         >
-          <div className="-translate-y-6 whitespace-nowrap text-center">
-            <span
-              className="rounded-full border px-2 py-0.5 text-[0.6rem] font-bold tracking-[0.08em] uppercase backdrop-blur-sm"
-              style={{
-                color: step.accent,
-                borderColor: `${step.accent}66`,
-                background: "rgba(3,5,12,0.72)",
-              }}
-            >
-              {reference && !active ? "Median US household" : step.title}
+          <span
+            className="rounded-full border px-2 py-0.5 text-[0.6rem] font-bold tracking-[0.08em] uppercase backdrop-blur-sm"
+            style={{
+              color: step.accent,
+              borderColor: active ? `${step.accent}cc` : `${step.accent}55`,
+              background: active ? "rgba(3,5,12,0.85)" : "rgba(3,5,12,0.6)",
+              opacity: active ? 1 : 0.8,
+            }}
+          >
+            {reference && !active ? "Median US household" : step.title}
+          </span>
+          {(active || reference) && (
+            <span className="mt-1 block text-[0.55rem] text-white/70">{step.value}</span>
+          )}
+          {clamped && active && (
+            <span className="mt-0.5 block text-[0.55rem] text-white/55">
+              shown larger than true scale
             </span>
-            {clamped && (
-              <span className="mt-1 block text-[0.55rem] text-white/55">
-                shown larger than true scale
-              </span>
-            )}
-          </div>
-        </Html>
-      )}
+          )}
+        </div>
+      </Html>
     </group>
   );
 }
+
