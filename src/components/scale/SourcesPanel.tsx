@@ -13,10 +13,9 @@ export function SourcesPanel() {
           are unviewable at once: the visual restraint is in the geometry, not in the framing.
         </p>
         <p className="mt-2">
-          Some of these figures are not net worth: a home's sale price and a private island's asking
-          price are purchases, compared here against everything a median family owns minus
-          everything it owes. The comparison is deliberate, and it is labelled as such on those
-          steps.
+          Some of these figures are not net worth: a home's sale price is a purchase, compared here
+          against everything a median family owns minus everything it owes. The comparison is
+          deliberate, and it is labelled as such on that step.
         </p>
       </section>
 

@@ -77,18 +77,6 @@ const rawSteps: WealthStepInput[] = [
     source: "census-hud",
   },
   {
-    title: "A Private Island",
-    value: "$5,000,000",
-    desc: "A private island is a luxury so vast it becomes an ice giant — nearly 3× the radius of the Earth you just left behind.",
-    wealth: 5_000_000,
-    color: 0x06b6d4,
-    accent: "#22d3ee",
-    emoji: "🏝️",
-    bodyType: "ice",
-    bgTint: "#000c16",
-    source: "listings",
-  },
-  {
     title: "Top 1% Household",
     value: "$13,600,000",
     desc: "Entering the top 1% takes roughly $13.6M — a ringed gas giant over 4× the radius of the median family's whole net worth.",
@@ -179,7 +167,7 @@ export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
 export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
 
 /** Bodies shown side by side by default in compare mode. */
-export const COMPARE_DEFAULT = [1, 2, 4, 5];
+export const COMPARE_DEFAULT = [1, 2, 3, 4];
 
 export const LUMINOUS: BodyType[] = ["star", "giant-star", "supergiant"];
 
@@ -235,12 +223,6 @@ export const sources: SourceEntry[] = [
     id: "census-hud",
     label: "Median US home price",
     detail: "Census Bureau / HUD median sales price of houses sold in the United States, rounded.",
-    asOf: "2024",
-  },
-  {
-    id: "listings",
-    label: "Private island",
-    detail: "Representative asking price from private-island brokerage listings; highly variable.",
     asOf: "2024",
   },
   {

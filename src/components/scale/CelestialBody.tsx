@@ -1,4 +1,3 @@
-import { Html } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -17,7 +16,7 @@ interface Props {
 /** Below this angular size the body is drawn as a fixed-size marker instead. */
 const MIN_ANGULAR = 0.004;
 
-export function CelestialBody({ step, active, reference = false, animate }: Props) {
+export function CelestialBody({ step, animate }: Props) {
   const fullRef = useRef<THREE.Group>(null);
   const markerRef = useRef<THREE.Group>(null);
   const bodyRef = useRef<THREE.Mesh>(null);
@@ -68,7 +67,7 @@ export function CelestialBody({ step, active, reference = false, animate }: Prop
   });
 
   const segments = step.radius > 100 ? 64 : 48;
-  const labelled = reference || active;
+
 
   return (
     <group position={[step.x, step.y, 0]}>
@@ -162,33 +161,7 @@ export function CelestialBody({ step, active, reference = false, animate }: Prop
         </sprite>
       </group>
 
-      {labelled && (
-        <Html
-          center
-          position={[0, clamped ? 0 : step.radius * 1.1, 0]}
-          zIndexRange={[12, 10]}
-          style={{ pointerEvents: "none" }}
-          wrapperClass="scale-label-wrapper"
-        >
-          <div className="-translate-y-6 whitespace-nowrap text-center">
-            <span
-              className="rounded-full border px-2 py-0.5 text-[0.6rem] font-bold tracking-[0.08em] uppercase backdrop-blur-sm"
-              style={{
-                color: step.accent,
-                borderColor: `${step.accent}66`,
-                background: "rgba(3,5,12,0.72)",
-              }}
-            >
-              {reference && !active ? "Median US household" : step.title}
-            </span>
-            {clamped && (
-              <span className="mt-1 block text-[0.55rem] text-white/55">
-                shown larger than true scale
-              </span>
-            )}
-          </div>
-        </Html>
-      )}
     </group>
   );
 }
+
