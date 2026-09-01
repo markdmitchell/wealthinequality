@@ -232,19 +232,6 @@ export const sources: SourceEntry[] = [
     asOf: "2022 survey, released 2023",
   },
   {
-    id: "usda-fed",
-    label: "Two weeks of groceries",
-    detail:
-      "USDA moderate-cost food plan for a family of four, scaled to two weeks; the emergency-cash comparison uses the Fed's Survey of Household Economics and Decisionmaking.",
-    asOf: "2023–2024",
-  },
-  {
-    id: "msrp",
-    label: "Lamborghini Huracán",
-    detail: "Manufacturer suggested retail price for a base Huracán, rounded.",
-    asOf: "2024 model year",
-  },
-  {
     id: "census-hud",
     label: "Median US home price",
     detail: "Census Bureau / HUD median sales price of houses sold in the United States, rounded.",
@@ -255,12 +242,6 @@ export const sources: SourceEntry[] = [
     label: "Private island",
     detail: "Representative asking price from private-island brokerage listings; highly variable.",
     asOf: "2024",
-  },
-  {
-    id: "usaid",
-    label: "USAID annual budget",
-    detail: "USAID appropriated budget authority prior to the agency's restructuring, rounded.",
-    asOf: "FY2023",
   },
   {
     id: "billionaire-index",
