@@ -1,4 +1,3 @@
-import { Html } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -25,6 +24,7 @@ export function CelestialBody({ step, active, reference = false, animate }: Prop
   const flareRef = useRef<THREE.Sprite>(null);
   const camera = useThree((s) => s.camera);
   const [clamped, setClamped] = useState(false);
+  void clamped;
 
   const luminous = isLuminous(step.bodyType);
   const surface = useMemo(
@@ -68,8 +68,6 @@ export function CelestialBody({ step, active, reference = false, animate }: Prop
   });
 
   const segments = step.radius > 100 ? 64 : 48;
-  // Stagger label lanes so labels stay readable when bodies bunch up on screen.
-  const lane = (step.index % 3) * 26;
 
 
   return (
@@ -164,38 +162,6 @@ export function CelestialBody({ step, active, reference = false, animate }: Prop
         </sprite>
       </group>
 
-      <Html
-        center
-        position={[0, clamped ? 0 : step.radius * 1.1, 0]}
-        zIndexRange={[12, 10]}
-        style={{ pointerEvents: "none" }}
-        wrapperClass="scale-label-wrapper"
-      >
-        <div
-          className="whitespace-nowrap text-center"
-          style={{ transform: `translateY(-${24 + lane}px)` }}
-        >
-          <span
-            className="rounded-full border px-2 py-0.5 text-[0.6rem] font-bold tracking-[0.08em] uppercase backdrop-blur-sm"
-            style={{
-              color: step.accent,
-              borderColor: active ? `${step.accent}cc` : `${step.accent}55`,
-              background: active ? "rgba(3,5,12,0.85)" : "rgba(3,5,12,0.6)",
-              opacity: active ? 1 : 0.8,
-            }}
-          >
-            {reference && !active ? "Median US household" : step.title}
-          </span>
-          {(active || reference) && (
-            <span className="mt-1 block text-[0.55rem] text-white/70">{step.value}</span>
-          )}
-          {clamped && active && (
-            <span className="mt-0.5 block text-[0.55rem] text-white/55">
-              shown larger than true scale
-            </span>
-          )}
-        </div>
-      </Html>
     </group>
   );
 }
