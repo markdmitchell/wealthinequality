@@ -101,18 +101,6 @@ const rawSteps: WealthStepInput[] = [
     source: "billionaire-index",
   },
   {
-    title: "Universal Healthcare",
-    value: "$3,500,000,000,000",
-    desc: "An estimated annual federal cost of single-payer healthcare for every American. A star 3× the Sun's radius.",
-    wealth: 3_500_000_000_000,
-    color: 0xf87171,
-    accent: "#fca5a5",
-    emoji: "🏥",
-    bodyType: "giant-star",
-    bgTint: "#160404",
-    source: "m4a",
-  },
-  {
     title: "All US Billionaires",
     value: "$7,800,000,000,000",
     desc: "The combined wealth of roughly 900 US billionaires. A red supergiant so enormous the Sun is invisible inside it.",
