@@ -101,18 +101,6 @@ const rawSteps: WealthStepInput[] = [
     source: "billionaire-index",
   },
   {
-    title: "Universal Healthcare",
-    value: "$3,500,000,000,000",
-    desc: "An estimated annual federal cost of single-payer healthcare for every American. A star 3× the Sun's radius.",
-    wealth: 3_500_000_000_000,
-    color: 0xf87171,
-    accent: "#fca5a5",
-    emoji: "🏥",
-    bodyType: "giant-star",
-    bgTint: "#160404",
-    source: "m4a",
-  },
-  {
     title: "All US Billionaires",
     value: "$7,800,000,000,000",
     desc: "The combined wealth of roughly 900 US billionaires. A red supergiant so enormous the Sun is invisible inside it.",
@@ -133,9 +121,9 @@ export function calcRadius(wealth: number): number {
 
 /**
  * Shared-baseline layout: every body rests on the plane y = 0 with its centre at
- * y = radius, and consecutive bodies nearly touch. Because the gap scales with
- * the *larger* body, the previous step always sits just inside the current
- * step's frame — which is what makes the size difference readable.
+ * y = radius. The gap before a body scales mostly with that body's own (larger)
+ * radius, so as the focus grows the smaller predecessors are pushed apart by a
+ * proportionally huge distance instead of collapsing into one another.
  */
 function buildSteps(input: WealthStepInput[]): WealthStep[] {
   const out: WealthStep[] = [];
@@ -144,9 +132,10 @@ function buildSteps(input: WealthStepInput[]): WealthStep[] {
     let x = 0;
     const p = out[i - 1];
     if (p) {
-      const gap = radius * 0.12 + p.radius * 0.2;
+      const gap = radius * 0.55 + p.radius * 0.2;
       x = p.x + p.radius + gap + radius;
     }
+
 
     out.push({
       ...s,
@@ -231,13 +220,6 @@ export const sources: SourceEntry[] = [
     detail:
       "Bloomberg Billionaires Index / Forbes real-time net worth. This figure moves by tens of billions week to week.",
     asOf: "2025 snapshot",
-  },
-  {
-    id: "m4a",
-    label: "Universal healthcare cost",
-    detail:
-      "Mid-range estimate of added annual federal outlays under single-payer, from CBO and Mercatus analyses. Estimates of total national health spending under such a system are lower than current spending in some studies and higher in others.",
-    asOf: "2020–2022 estimates",
   },
   {
     id: "forbes",
