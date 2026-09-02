@@ -221,13 +221,6 @@ export const sources: SourceEntry[] = [
     asOf: "2025 snapshot",
   },
   {
-    id: "m4a",
-    label: "Universal healthcare cost",
-    detail:
-      "Mid-range estimate of added annual federal outlays under single-payer, from CBO and Mercatus analyses. Estimates of total national health spending under such a system are lower than current spending in some studies and higher in others.",
-    asOf: "2020–2022 estimates",
-  },
-  {
     id: "forbes",
     label: "Combined US billionaire wealth",
     detail: "Forbes 400 / Americans for Tax Fairness tallies of aggregate US billionaire wealth.",
