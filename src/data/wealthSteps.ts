@@ -121,9 +121,9 @@ export function calcRadius(wealth: number): number {
 
 /**
  * Shared-baseline layout: every body rests on the plane y = 0 with its centre at
- * y = radius, and consecutive bodies nearly touch. Because the gap scales with
- * the *larger* body, the previous step always sits just inside the current
- * step's frame — which is what makes the size difference readable.
+ * y = radius. The gap before a body scales mostly with that body's own (larger)
+ * radius, so as the focus grows the smaller predecessors are pushed apart by a
+ * proportionally huge distance instead of collapsing into one another.
  */
 function buildSteps(input: WealthStepInput[]): WealthStep[] {
   const out: WealthStep[] = [];
@@ -132,9 +132,10 @@ function buildSteps(input: WealthStepInput[]): WealthStep[] {
     let x = 0;
     const p = out[i - 1];
     if (p) {
-      const gap = radius * 0.12 + p.radius * 0.2;
+      const gap = radius * 0.55 + p.radius * 0.2;
       x = p.x + p.radius + gap + radius;
     }
+
 
     out.push({
       ...s,
