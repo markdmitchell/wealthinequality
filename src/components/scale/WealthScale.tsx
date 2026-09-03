@@ -52,10 +52,24 @@ export function WealthScale() {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [viewWidth, setViewWidth] = useState(0);
+  const [spacing, setSpacing] = useState(SPACING_DEFAULT);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
-  const step = wealthSteps[index] ?? wealthSteps[0]!;
+
+  useEffect(() => {
+    const saved = Number(window.localStorage.getItem(SPACING_KEY));
+    if (Number.isFinite(saved) && saved >= SPACING_MIN && saved <= SPACING_MAX) setSpacing(saved);
+  }, []);
+
+  const onSpacing = useCallback((value: number) => {
+    setSpacing(value);
+    window.localStorage.setItem(SPACING_KEY, String(value));
+  }, []);
+
+  const steps = useMemo(() => buildWealthSteps(spacing), [spacing]);
+  const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
+
 
   const go = useCallback(
     (next: number) => {
