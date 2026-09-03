@@ -88,7 +88,7 @@ export function ScaleCanvas(props: Props) {
         gl={{ antialias: true, powerPreference: "high-performance", logarithmicDepthBuffer: true }}
         camera={{ fov: 42, near: 0.01, far: 50_000_000, position: [0, 14, 44] }}
       >
-        <Scene {...props} visible={visible} labelNodes={labelNodes} />
+        <Scene {...props} visible={visible} labelNodes={labelNodes} all={all} />
       </Canvas>
 
       {/* Screen-space labels: always on screen, even for off-frame or invisible bodies. */}
