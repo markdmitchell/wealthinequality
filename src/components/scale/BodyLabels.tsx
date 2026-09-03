@@ -18,8 +18,8 @@ interface Rect {
 }
 
 const LABEL_W = 150;
-const LABEL_H = 30;
-const ROW = 34;
+const LABEL_H = 40;
+const ROW = 44;
 
 function overlaps(a: Rect, b: Rect): boolean {
   return (
