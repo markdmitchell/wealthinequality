@@ -109,10 +109,12 @@ export function WealthScale() {
         <Suspense fallback={null}>
           <ScaleCanvas
             step={step}
+            steps={steps}
             compare={compare}
             reducedMotion={reducedMotion}
             onView={setViewWidth}
           />
+
         </Suspense>
       )}
 
