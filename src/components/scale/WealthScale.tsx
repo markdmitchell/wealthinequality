@@ -1,12 +1,22 @@
 import { Info, Layers, Route, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { COMPARE_DEFAULT, wealthSteps } from "@/data/wealthSteps";
+import {
+  buildWealthSteps,
+  COMPARE_DEFAULT,
+  SPACING_DEFAULT,
+  SPACING_MAX,
+  SPACING_MIN,
+  wealthSteps,
+} from "@/data/wealthSteps";
 import { CompareInset } from "./CompareInset";
 import { InfoPanel } from "./InfoPanel";
 import { LogRail } from "./LogRail";
 import { NavControls } from "./NavControls";
 import { ScaleBar } from "./ScaleBar";
 import { SourcesPanel } from "./SourcesPanel";
+
+const SPACING_KEY = "wealth-scale-spacing";
+
 
 const ScaleCanvas = lazy(() =>
   import("./ScaleCanvas").then((m) => ({ default: m.ScaleCanvas })),
@@ -42,10 +52,24 @@ export function WealthScale() {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [viewWidth, setViewWidth] = useState(0);
+  const [spacing, setSpacing] = useState(SPACING_DEFAULT);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
-  const step = wealthSteps[index] ?? wealthSteps[0]!;
+
+  useEffect(() => {
+    const saved = Number(window.localStorage.getItem(SPACING_KEY));
+    if (Number.isFinite(saved) && saved >= SPACING_MIN && saved <= SPACING_MAX) setSpacing(saved);
+  }, []);
+
+  const onSpacing = useCallback((value: number) => {
+    setSpacing(value);
+    window.localStorage.setItem(SPACING_KEY, String(value));
+  }, []);
+
+  const steps = useMemo(() => buildWealthSteps(spacing), [spacing]);
+  const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
+
 
   const go = useCallback(
     (next: number) => {
@@ -85,10 +109,12 @@ export function WealthScale() {
         <Suspense fallback={null}>
           <ScaleCanvas
             step={step}
+            steps={steps}
             compare={compare}
             reducedMotion={reducedMotion}
             onView={setViewWidth}
           />
+
         </Suspense>
       )}
 
@@ -145,6 +171,46 @@ export function WealthScale() {
         <div className="mb-2 lg:hidden">
           <LogRail index={index} onSelect={go} orientation="horizontal" />
         </div>
+
+        {/* Sphere spacing setting */}
+        <div className="mb-3 rounded-2xl border border-border bg-surface/85 px-4 py-3 backdrop-blur-xl">
+          <div className="flex items-baseline justify-between gap-3">
+            <label
+              htmlFor="spacing"
+              className="text-[0.68rem] font-semibold tracking-[0.12em] text-foreground/90 uppercase"
+            >
+              Sphere spacing
+            </label>
+            <span className="font-mono text-[0.68rem] text-muted-foreground">
+              {spacing.toFixed(2)}×
+            </span>
+          </div>
+          <input
+            id="spacing"
+            type="range"
+            min={SPACING_MIN}
+            max={SPACING_MAX}
+            step={0.05}
+            value={spacing}
+            onChange={(e) => onSpacing(Number(e.target.value))}
+            className="mt-2 h-6 w-full accent-[var(--color-primary,#60a5fa)]"
+            aria-describedby="spacing-help"
+          />
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <p id="spacing-help" className="text-[0.62rem] text-muted-foreground/80">
+              Gap between bodies, in multiples of the larger sphere's radius.
+            </p>
+            <button
+              type="button"
+              onClick={() => onSpacing(SPACING_DEFAULT)}
+              className="shrink-0 rounded-full border border-border px-2 py-1 text-[0.62rem] font-semibold text-foreground transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+
 
         {compareMode ? (
           <section className="rounded-2xl border border-border bg-surface/85 p-5 backdrop-blur-xl sm:p-7">

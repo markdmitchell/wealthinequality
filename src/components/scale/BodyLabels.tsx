@@ -10,11 +10,30 @@ interface Props {
   nodes: LabelNodes;
 }
 
+interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+const LABEL_W = 150;
+const LABEL_H = 40;
+const ROW = 44;
+
+function overlaps(a: Rect, b: Rect): boolean {
+  return (
+    Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.y - b.y) < (a.h + b.h) / 2
+  );
+}
+
 /**
  * Projects every body's centre to screen space each frame and drives a DOM
  * overlay. Bodies that fall outside the frame (or are far too small to see)
- * park their label in a stacked column at the nearest safe edge, so every
- * sphere on the scale stays labelled at every step.
+ * park their label in stacked columns at the nearest safe edge. Columns wrap
+ * inward when they run out of vertical room, and every placement is tested
+ * against the reserved UI panel rects plus previously placed labels, so labels
+ * never sit on the HUD or on one another at extreme zoom levels.
  */
 export function BodyLabels({ steps, nodes }: Props) {
   const camera = useThree((s) => s.camera);
@@ -29,9 +48,24 @@ export function BodyLabels({ steps, nodes }: Props) {
     const padTop = 104;
     const padBottom = wide ? 48 : 360;
 
-    let leftStack = 0;
-    let rightStack = 0;
-    const placed: { x: number; y: number }[] = [];
+    const safeTop = padTop;
+    const safeBottom = size.height - padBottom;
+    const rows = Math.max(1, Math.floor((safeBottom - safeTop) / ROW));
+
+    // Reserved HUD areas that labels must never cover.
+    const reserved: Rect[] = [
+      // header title block
+      { x: 180, y: 56, w: 360, h: 96 },
+      // header buttons / scale bar
+      { x: size.width - 180, y: 70, w: 360, h: 130 },
+    ];
+
+    const placed: Rect[] = [];
+    let leftSlot = 0;
+    let rightSlot = 0;
+
+    const fits = (r: Rect) =>
+      !reserved.some((q) => overlaps(r, q)) && !placed.some((q) => overlaps(r, q));
 
     for (const step of steps) {
       const el = nodes.get(step.index);
@@ -45,39 +79,54 @@ export function BodyLabels({ steps, nodes }: Props) {
         behind ||
         rawX < padLeft ||
         rawX > size.width - padRight ||
-        rawY < padTop ||
-        rawY > size.height - padBottom;
+        rawY < safeTop ||
+        rawY > safeBottom;
 
-      let x: number;
-      let y: number;
+      let rect: Rect;
+
       if (outside) {
         const toRight = !behind && rawX > size.width / 2;
-        if (toRight) {
-          x = size.width - padRight - 60;
-          y = (wide ? 190 : padTop) + rightStack * 34;
-          rightStack += 1;
-        } else {
-          x = padLeft + 60;
-          y = padTop + leftStack * 34;
-          leftStack += 1;
+        let slot = toRight ? rightSlot : leftSlot;
+        let candidate: Rect;
+        // Walk slots (row, then wrap into the next column inward) until free.
+        for (let guard = 0; guard < rows * 4; guard += 1, slot += 1) {
+          const col = Math.floor(slot / rows);
+          const row = slot % rows;
+          const x = toRight
+            ? size.width - padRight - 70 - col * (LABEL_W + 12)
+            : padLeft + 70 + col * (LABEL_W + 12);
+          candidate = { x, y: safeTop + LABEL_H / 2 + row * ROW, w: LABEL_W, h: LABEL_H };
+          if (fits(candidate)) break;
         }
+        rect = candidate!;
+        if (toRight) rightSlot = slot + 1;
+        else leftSlot = slot + 1;
       } else {
-        x = rawX;
-        y = rawY;
-        // Nudge up out of any label already occupying this spot.
+        rect = { x: rawX, y: rawY, w: LABEL_W, h: LABEL_H };
+        // Nudge up, then down, out of anything already occupying this spot.
         let guard = 0;
-        while (
-          guard < 8 &&
-          placed.some((p) => Math.abs(p.x - x) < 150 && Math.abs(p.y - y) < 26)
-        ) {
-          y -= 30;
+        while (guard < 10 && !fits(rect)) {
+          rect = { ...rect, y: rect.y - ROW };
           guard += 1;
         }
-        y = Math.max(padTop, y);
+        if (!fits(rect)) {
+          rect = { x: rawX, y: rawY, w: LABEL_W, h: LABEL_H };
+          guard = 0;
+          while (guard < 10 && !fits(rect)) {
+            rect = { ...rect, y: rect.y + ROW };
+            guard += 1;
+          }
+        }
+        rect = {
+          ...rect,
+          y: Math.min(safeBottom - LABEL_H / 2, Math.max(safeTop + LABEL_H / 2, rect.y)),
+        };
       }
 
-      placed.push({ x, y });
-      el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translate(-50%, -100%)`;
+      placed.push(rect);
+      el.style.transform = `translate3d(${Math.round(rect.x)}px, ${Math.round(
+        rect.y + LABEL_H / 2,
+      )}px, 0) translate(-50%, -100%)`;
       el.style.opacity = outside ? "0.8" : "1";
       el.dataset["offFrame"] = outside ? "true" : "false";
     }
