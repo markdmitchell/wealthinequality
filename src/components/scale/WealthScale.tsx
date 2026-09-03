@@ -172,6 +172,46 @@ export function WealthScale() {
           <LogRail index={index} onSelect={go} orientation="horizontal" />
         </div>
 
+        {/* Sphere spacing setting */}
+        <div className="mb-3 rounded-2xl border border-border bg-surface/85 px-4 py-3 backdrop-blur-xl">
+          <div className="flex items-baseline justify-between gap-3">
+            <label
+              htmlFor="spacing"
+              className="text-[0.68rem] font-semibold tracking-[0.12em] text-foreground/90 uppercase"
+            >
+              Sphere spacing
+            </label>
+            <span className="font-mono text-[0.68rem] text-muted-foreground">
+              {spacing.toFixed(2)}×
+            </span>
+          </div>
+          <input
+            id="spacing"
+            type="range"
+            min={SPACING_MIN}
+            max={SPACING_MAX}
+            step={0.05}
+            value={spacing}
+            onChange={(e) => onSpacing(Number(e.target.value))}
+            className="mt-2 h-6 w-full accent-[var(--color-primary,#60a5fa)]"
+            aria-describedby="spacing-help"
+          />
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <p id="spacing-help" className="text-[0.62rem] text-muted-foreground/80">
+              Gap between bodies, in multiples of the larger sphere's radius.
+            </p>
+            <button
+              type="button"
+              onClick={() => onSpacing(SPACING_DEFAULT)}
+              className="shrink-0 rounded-full border border-border px-2 py-1 text-[0.62rem] font-semibold text-foreground transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+
+
         {compareMode ? (
           <section className="rounded-2xl border border-border bg-surface/85 p-5 backdrop-blur-xl sm:p-7">
             <h2 className="text-lg font-bold text-foreground">Side by side</h2>
