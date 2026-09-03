@@ -119,23 +119,27 @@ export function calcRadius(wealth: number): number {
   return BASE_RADIUS * Math.cbrt(wealth / BASE_WEALTH);
 }
 
+/** User-tunable spacing factor: multiples of the larger body's radius. */
+export const SPACING_DEFAULT = 0.55;
+export const SPACING_MIN = 0.1;
+export const SPACING_MAX = 4;
+
 /**
  * Shared-baseline layout: every body rests on the plane y = 0 with its centre at
  * y = radius. The gap before a body scales mostly with that body's own (larger)
  * radius, so as the focus grows the smaller predecessors are pushed apart by a
  * proportionally huge distance instead of collapsing into one another.
  */
-function buildSteps(input: WealthStepInput[]): WealthStep[] {
+function buildSteps(input: WealthStepInput[], spacing = SPACING_DEFAULT): WealthStep[] {
   const out: WealthStep[] = [];
   input.forEach((s, i) => {
     const radius = calcRadius(s.wealth);
     let x = 0;
     const p = out[i - 1];
     if (p) {
-      const gap = radius * 0.55 + p.radius * 0.2;
+      const gap = radius * spacing + p.radius * 0.2;
       x = p.x + p.radius + gap + radius;
     }
-
 
     out.push({
       ...s,
@@ -150,10 +154,16 @@ function buildSteps(input: WealthStepInput[]): WealthStep[] {
   return out;
 }
 
+/** Rebuild the layout for a user-chosen spacing factor. */
+export function buildWealthSteps(spacing: number): WealthStep[] {
+  return buildSteps(rawSteps, Math.min(SPACING_MAX, Math.max(SPACING_MIN, spacing)));
+}
+
 export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
 
 /** The median-household Earth: the reference body that is never removed. */
 export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
+
 
 /** Bodies shown side by side by default in compare mode. */
 export const COMPARE_DEFAULT = [1, 2, 3, 4];
