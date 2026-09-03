@@ -1,12 +1,22 @@
 import { Info, Layers, Route, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { COMPARE_DEFAULT, wealthSteps } from "@/data/wealthSteps";
+import {
+  buildWealthSteps,
+  COMPARE_DEFAULT,
+  SPACING_DEFAULT,
+  SPACING_MAX,
+  SPACING_MIN,
+  wealthSteps,
+} from "@/data/wealthSteps";
 import { CompareInset } from "./CompareInset";
 import { InfoPanel } from "./InfoPanel";
 import { LogRail } from "./LogRail";
 import { NavControls } from "./NavControls";
 import { ScaleBar } from "./ScaleBar";
 import { SourcesPanel } from "./SourcesPanel";
+
+const SPACING_KEY = "wealth-scale-spacing";
+
 
 const ScaleCanvas = lazy(() =>
   import("./ScaleCanvas").then((m) => ({ default: m.ScaleCanvas })),
