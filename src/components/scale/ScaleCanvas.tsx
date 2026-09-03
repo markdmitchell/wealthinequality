@@ -13,26 +13,29 @@ interface Props {
   compare: number[] | null;
   reducedMotion: boolean;
   onView?: ((viewWidth: number) => void) | undefined;
+  /** Layout rebuilt for the user's spacing factor. */
+  steps?: WealthStep[] | undefined;
 }
 
 interface SceneProps extends Props {
   visible: WealthStep[];
   labelNodes: LabelNodes;
+  all: WealthStep[];
 }
 
-function Scene({ step, compare, reducedMotion, onView, visible, labelNodes }: SceneProps) {
+function Scene({ step, compare, reducedMotion, onView, visible, labelNodes, all }: SceneProps) {
   useEffect(() => () => disposeTextureCache(), []);
 
   const framed = useMemo(() => {
     if (compare && compare.length > 0) {
       return compare
-        .map((i) => wealthSteps[i])
+        .map((i) => all[i])
         .filter((s): s is WealthStep => Boolean(s))
         .sort((a, b) => a.x - b.x);
     }
-    const prev = wealthSteps[step.index - 1];
+    const prev = all[step.index - 1];
     return prev ? [prev, step] : [step];
-  }, [compare, step]);
+  }, [compare, step, all]);
 
   const activeSet = useMemo(
     () => new Set(compare && compare.length ? compare : [step.index]),
@@ -61,19 +64,20 @@ function Scene({ step, compare, reducedMotion, onView, visible, labelNodes }: Sc
 }
 
 export function ScaleCanvas(props: Props) {
-  const { compare, step } = props;
+  const { compare, step, steps } = props;
   const labelNodes = useRef<LabelNodes>(new Map()).current;
+  const all = steps ?? wealthSteps;
 
   const visible = useMemo(
-    () =>
-      wealthSteps.filter((s) => !compare || compare.length === 0 || compare.includes(s.index)),
-    [compare],
+    () => all.filter((s) => !compare || compare.length === 0 || compare.includes(s.index)),
+    [compare, all],
   );
 
   const activeSet = useMemo(
     () => new Set(compare && compare.length ? compare : [step.index]),
     [compare, step.index],
   );
+
 
   return (
     <div className="absolute inset-0">
