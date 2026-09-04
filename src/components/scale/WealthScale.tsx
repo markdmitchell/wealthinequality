@@ -1,6 +1,7 @@
 import { Info, Layers, Route, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  buildAutoSteps,
   buildWealthSteps,
   COMPARE_DEFAULT,
   SPACING_DEFAULT,
@@ -16,6 +17,8 @@ import { ScaleBar } from "./ScaleBar";
 import { SourcesPanel } from "./SourcesPanel";
 
 const SPACING_KEY = "wealth-scale-spacing";
+const AUTO_KEY = "wealth-scale-spacing-auto";
+
 
 
 const ScaleCanvas = lazy(() =>
