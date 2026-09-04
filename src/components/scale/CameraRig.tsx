@@ -41,24 +41,30 @@ export function CameraRig({ framed, reducedMotion, onView }: Props) {
     const main = framed[framed.length - 1] ?? REFERENCE_STEP;
     let minX = Infinity;
     let maxX = -Infinity;
-    let maxY = 0;
+    let minY = Infinity;
+    let maxY = -Infinity;
     for (const s of framed) {
       minX = Math.min(minX, s.x - s.radius);
       maxX = Math.max(maxX, s.x + s.radius);
+      minY = Math.min(minY, s.y - s.radius);
       maxY = Math.max(maxY, s.y + s.radius);
     }
     if (!Number.isFinite(minX)) {
       minX = main.x - main.radius;
       maxX = main.x + main.radius;
+      minY = main.y - main.radius;
       maxY = main.y + main.radius;
     }
 
-    const margin = 1.35;
+    // True bounding-box fit: full spans on both axes, aimed at the box centre.
+    const margin = 1.3;
     const spanX = (maxX - minX) * margin;
-    const spanY = maxY * margin;
-    const dist = fitDistance(spanX, spanY, camera.fov, aspect);
+    const spanY = (maxY - minY) * margin;
+    // The camera sits slightly off-axis, which foreshortens the box; pay for it.
+    const offAxis = 1.12;
+    const dist = fitDistance(spanX, spanY, camera.fov, aspect) * offAxis;
 
-    desired.current.target.set((minX + maxX) / 2, maxY * 0.45, 0);
+    desired.current.target.set((minX + maxX) / 2, (minY + maxY) / 2, 0);
     desired.current.dist = dist;
     flying.current = true;
 
@@ -70,12 +76,13 @@ export function CameraRig({ framed, reducedMotion, onView }: Props) {
 
     if (reducedMotion && controls) {
       controls.target.copy(desired.current.target);
-      const dir = new THREE.Vector3(0.12, 0.16, 1).normalize();
+      const dir = new THREE.Vector3(0.1, 0.14, 1).normalize();
       camera.position.copy(controls.target).addScaledVector(dir, dist);
       controls.update();
       flying.current = false;
     }
   }, [framed, reducedMotion, camera, size.width, size.height]);
+
 
   useFrame((state, rawDelta) => {
     const controls = controlsRef.current;
