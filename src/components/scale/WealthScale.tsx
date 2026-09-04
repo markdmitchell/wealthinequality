@@ -1,6 +1,7 @@
 import { Info, Layers, Route, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  buildAutoSteps,
   buildWealthSteps,
   COMPARE_DEFAULT,
   SPACING_DEFAULT,
@@ -16,6 +17,8 @@ import { ScaleBar } from "./ScaleBar";
 import { SourcesPanel } from "./SourcesPanel";
 
 const SPACING_KEY = "wealth-scale-spacing";
+const AUTO_KEY = "wealth-scale-spacing-auto";
+
 
 
 const ScaleCanvas = lazy(() =>
@@ -53,12 +56,15 @@ export function WealthScale() {
   const [compareMode, setCompareMode] = useState(false);
   const [viewWidth, setViewWidth] = useState(0);
   const [spacing, setSpacing] = useState(SPACING_DEFAULT);
+  const [autoTune, setAutoTune] = useState(true);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
 
   useEffect(() => {
     const saved = Number(window.localStorage.getItem(SPACING_KEY));
     if (Number.isFinite(saved) && saved >= SPACING_MIN && saved <= SPACING_MAX) setSpacing(saved);
+    const auto = window.localStorage.getItem(AUTO_KEY);
+    if (auto !== null) setAutoTune(auto === "true");
   }, []);
 
   const onSpacing = useCallback((value: number) => {
@@ -66,9 +72,24 @@ export function WealthScale() {
     window.localStorage.setItem(SPACING_KEY, String(value));
   }, []);
 
-  const steps = useMemo(() => buildWealthSteps(spacing), [spacing]);
+  const onAutoTune = useCallback((value: boolean) => {
+    setAutoTune(value);
+    window.localStorage.setItem(AUTO_KEY, String(value));
+  }, []);
+
+
+  const focus = useMemo(
+    () => (compareMode ? COMPARE_DEFAULT : [Math.max(0, index - 1), index]),
+    [compareMode, index],
+  );
+
+  const steps = useMemo(
+    () => (autoTune ? buildAutoSteps(focus, spacing) : buildWealthSteps(spacing)),
+    [autoTune, focus, spacing],
+  );
   const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
+
 
 
   const go = useCallback(
@@ -182,9 +203,18 @@ export function WealthScale() {
               Sphere spacing
             </label>
             <span className="font-mono text-[0.68rem] text-muted-foreground">
-              {spacing.toFixed(2)}×
+              {autoTune ? `auto · ${spacing.toFixed(2)}×` : `${spacing.toFixed(2)}×`}
             </span>
           </div>
+          <label className="mt-2 flex cursor-pointer items-center gap-2 text-[0.66rem] text-foreground/90">
+            <input
+              type="checkbox"
+              checked={autoTune}
+              onChange={(e) => onAutoTune(e.target.checked)}
+              className="size-4 accent-[var(--color-primary,#60a5fa)]"
+            />
+            Auto-tune to the focused sphere
+          </label>
           <input
             id="spacing"
             type="range"
@@ -198,8 +228,11 @@ export function WealthScale() {
           />
           <div className="mt-1 flex items-center justify-between gap-2">
             <p id="spacing-help" className="text-[0.62rem] text-muted-foreground/80">
-              Gap between bodies, in multiples of the larger sphere's radius.
+              {autoTune
+                ? "Gaps grow with whatever sphere is in focus, so small bodies and their labels never stack. The slider scales the auto amount."
+                : "Fixed gap between bodies, in multiples of the larger sphere's radius."}
             </p>
+
             <button
               type="button"
               onClick={() => onSpacing(SPACING_DEFAULT)}
