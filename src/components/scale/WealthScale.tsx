@@ -203,9 +203,18 @@ export function WealthScale() {
               Sphere spacing
             </label>
             <span className="font-mono text-[0.68rem] text-muted-foreground">
-              {spacing.toFixed(2)}×
+              {autoTune ? `auto · ${spacing.toFixed(2)}×` : `${spacing.toFixed(2)}×`}
             </span>
           </div>
+          <label className="mt-2 flex cursor-pointer items-center gap-2 text-[0.66rem] text-foreground/90">
+            <input
+              type="checkbox"
+              checked={autoTune}
+              onChange={(e) => onAutoTune(e.target.checked)}
+              className="size-4 accent-[var(--color-primary,#60a5fa)]"
+            />
+            Auto-tune to the focused sphere
+          </label>
           <input
             id="spacing"
             type="range"
@@ -219,8 +228,11 @@ export function WealthScale() {
           />
           <div className="mt-1 flex items-center justify-between gap-2">
             <p id="spacing-help" className="text-[0.62rem] text-muted-foreground/80">
-              Gap between bodies, in multiples of the larger sphere's radius.
+              {autoTune
+                ? "Gaps grow with whatever sphere is in focus, so small bodies and their labels never stack. The slider scales the auto amount."
+                : "Fixed gap between bodies, in multiples of the larger sphere's radius."}
             </p>
+
             <button
               type="button"
               onClick={() => onSpacing(SPACING_DEFAULT)}
