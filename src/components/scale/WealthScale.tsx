@@ -66,9 +66,18 @@ export function WealthScale() {
     window.localStorage.setItem(SPACING_KEY, String(value));
   }, []);
 
-  const steps = useMemo(() => buildWealthSteps(spacing), [spacing]);
+  const focus = useMemo(
+    () => (compareMode ? COMPARE_DEFAULT : [Math.max(0, index - 1), index]),
+    [compareMode, index],
+  );
+
+  const steps = useMemo(
+    () => (autoTune ? buildAutoSteps(focus, spacing) : buildWealthSteps(spacing)),
+    [autoTune, focus, spacing],
+  );
   const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
+
 
 
   const go = useCallback(
