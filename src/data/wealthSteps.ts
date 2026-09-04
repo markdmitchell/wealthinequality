@@ -168,16 +168,34 @@ export function buildWealthSteps(spacing: number): WealthStep[] {
 export const AUTO_GAP = 0.26;
 
 /**
+ * The framed pair may span at most this many focused-body diameters. Beyond it
+ * the previous body would leave the shot, and the size comparison — the point of
+ * the whole piece — disappears.
+ */
+export const SPAN_BUDGET = 2.6;
+
+/**
  * Auto-tuned layout: gaps grow with whatever body is in focus, so tiny spheres
- * fan apart instead of stacking when a giant fills the frame.
+ * fan apart instead of stacking when a giant fills the frame — but gaps between
+ * bodies that must share the frame are capped so both stay visible.
  */
 export function buildAutoSteps(focus: number[], spacing = SPACING_DEFAULT): WealthStep[] {
   const clamped = Math.min(SPACING_MAX, Math.max(SPACING_MIN, spacing));
+  const focusSet = new Set(focus);
   const focusRadius = focus.reduce((max, i) => {
     const s = rawSteps[i];
     return s ? Math.max(max, calcRadius(s.wealth)) : max;
   }, 0);
   const floor = focusRadius * AUTO_GAP * (clamped / SPACING_DEFAULT);
+  /** Total width the framed set may occupy. */
+  const budget = focusRadius * 2 * SPAN_BUDGET;
+  /** How many gaps sit between framed bodies. */
+  const framedGaps = Math.max(1, focus.length - 1);
+  const framedRadii = focus.reduce((sum, i) => {
+    const s = rawSteps[i];
+    return s ? sum + calcRadius(s.wealth) * 2 : sum;
+  }, 0);
+  const maxFramedGap = Math.max(focusRadius * 0.06, (budget - framedRadii) / framedGaps);
 
   const out: WealthStep[] = [];
   rawSteps.forEach((s, i) => {
@@ -185,7 +203,9 @@ export function buildAutoSteps(focus: number[], spacing = SPACING_DEFAULT): Weal
     let x = 0;
     const p = out[i - 1];
     if (p) {
-      const gap = Math.max(radius * clamped + p.radius * 0.2, floor);
+      let gap = Math.max(radius * clamped + p.radius * 0.2, floor);
+      // Both neighbours must share the frame: keep them close enough to fit.
+      if (focusSet.has(i) && focusSet.has(i - 1)) gap = Math.min(gap, maxFramedGap);
       x = p.x + p.radius + gap + radius;
     }
     out.push({
@@ -200,6 +220,7 @@ export function buildAutoSteps(focus: number[], spacing = SPACING_DEFAULT): Weal
   });
   return out;
 }
+
 
 
 export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
