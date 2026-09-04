@@ -41,26 +41,50 @@ export function CameraRig({ framed, reducedMotion, onView }: Props) {
     const main = framed[framed.length - 1] ?? REFERENCE_STEP;
     let minX = Infinity;
     let maxX = -Infinity;
-    let maxY = 0;
+    let minY = Infinity;
+    let maxY = -Infinity;
     for (const s of framed) {
       minX = Math.min(minX, s.x - s.radius);
       maxX = Math.max(maxX, s.x + s.radius);
+      minY = Math.min(minY, s.y - s.radius);
       maxY = Math.max(maxY, s.y + s.radius);
     }
     if (!Number.isFinite(minX)) {
       minX = main.x - main.radius;
       maxX = main.x + main.radius;
+      minY = main.y - main.radius;
       maxY = main.y + main.radius;
     }
 
-    const margin = 1.35;
-    const spanX = (maxX - minX) * margin;
-    const spanY = maxY * margin;
-    const dist = fitDistance(spanX, spanY, camera.fov, aspect);
+    // Fit into the region of the viewport the UI does not cover, then shift the
+    // aim so the framed bodies sit in that region rather than behind the panels.
+    const wide = size.width >= 1024;
+    const padL = wide ? 0.31 : 0.04;
+    const padR = wide ? 0.13 : 0.04;
+    const padT = 0.09;
+    const padB = wide ? 0.06 : 0.3;
+    const usableX = Math.max(0.25, 1 - padL - padR);
+    const usableY = Math.max(0.25, 1 - padT - padB);
 
-    desired.current.target.set((minX + maxX) / 2, maxY * 0.45, 0);
+    const margin = 1.12;
+    const spanX = ((maxX - minX) * margin) / usableX;
+    const spanY = ((maxY - minY) * margin) / usableY;
+    // The camera sits slightly off-axis, which foreshortens the box; pay for it.
+    const offAxis = 1.1;
+    const dist = fitDistance(spanX, spanY, camera.fov, aspect) * offAxis;
+
+    const vFov = (camera.fov * Math.PI) / 180;
+    const viewH = 2 * Math.tan(vFov / 2) * dist;
+    const viewW = viewH * aspect;
+
+    desired.current.target.set(
+      (minX + maxX) / 2 - ((padL - padR) / 2) * viewW,
+      (minY + maxY) / 2 + ((padT - padB) / 2) * viewH,
+      0,
+    );
     desired.current.dist = dist;
     flying.current = true;
+
 
     const controls = controlsRef.current;
     if (controls) {
@@ -70,12 +94,13 @@ export function CameraRig({ framed, reducedMotion, onView }: Props) {
 
     if (reducedMotion && controls) {
       controls.target.copy(desired.current.target);
-      const dir = new THREE.Vector3(0.12, 0.16, 1).normalize();
+      const dir = new THREE.Vector3(0.1, 0.14, 1).normalize();
       camera.position.copy(controls.target).addScaledVector(dir, dist);
       controls.update();
       flying.current = false;
     }
   }, [framed, reducedMotion, camera, size.width, size.height]);
+
 
   useFrame((state, rawDelta) => {
     const controls = controlsRef.current;
