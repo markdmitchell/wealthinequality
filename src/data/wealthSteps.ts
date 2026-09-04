@@ -165,7 +165,7 @@ export function buildWealthSteps(spacing: number): WealthStep[] {
  * the focus body, this keeps every smaller sphere — and therefore its label —
  * separated by a roughly constant number of screen pixels.
  */
-export const AUTO_GAP = 0.11;
+export const AUTO_GAP = 0.26;
 
 /**
  * Auto-tuned layout: gaps grow with whatever body is in focus, so tiny spheres
