@@ -56,17 +56,35 @@ export function CameraRig({ framed, reducedMotion, onView }: Props) {
       maxY = main.y + main.radius;
     }
 
-    // True bounding-box fit: full spans on both axes, aimed at the box centre.
-    const margin = 1.3;
-    const spanX = (maxX - minX) * margin;
-    const spanY = (maxY - minY) * margin;
+    // Fit into the region of the viewport the UI does not cover, then shift the
+    // aim so the framed bodies sit in that region rather than behind the panels.
+    const wide = size.width >= 1024;
+    const padL = wide ? 0.31 : 0.04;
+    const padR = wide ? 0.13 : 0.04;
+    const padT = 0.09;
+    const padB = wide ? 0.06 : 0.3;
+    const usableX = Math.max(0.25, 1 - padL - padR);
+    const usableY = Math.max(0.25, 1 - padT - padB);
+
+    const margin = 1.12;
+    const spanX = ((maxX - minX) * margin) / usableX;
+    const spanY = ((maxY - minY) * margin) / usableY;
     // The camera sits slightly off-axis, which foreshortens the box; pay for it.
-    const offAxis = 1.12;
+    const offAxis = 1.1;
     const dist = fitDistance(spanX, spanY, camera.fov, aspect) * offAxis;
 
-    desired.current.target.set((minX + maxX) / 2, (minY + maxY) / 2, 0);
+    const vFov = (camera.fov * Math.PI) / 180;
+    const viewH = 2 * Math.tan(vFov / 2) * dist;
+    const viewW = viewH * aspect;
+
+    desired.current.target.set(
+      (minX + maxX) / 2 - ((padL - padR) / 2) * viewW,
+      (minY + maxY) / 2 + ((padT - padB) / 2) * viewH,
+      0,
+    );
     desired.current.dist = dist;
     flying.current = true;
+
 
     const controls = controlsRef.current;
     if (controls) {
