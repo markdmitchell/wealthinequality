@@ -159,6 +159,49 @@ export function buildWealthSteps(spacing: number): WealthStep[] {
   return buildSteps(rawSteps, Math.min(SPACING_MAX, Math.max(SPACING_MIN, spacing)));
 }
 
+/**
+ * Minimum separation between two neighbouring bodies, as a fraction of the
+ * currently focused (largest framed) body's radius. Because the camera frames
+ * the focus body, this keeps every smaller sphere — and therefore its label —
+ * separated by a roughly constant number of screen pixels.
+ */
+export const AUTO_GAP = 0.11;
+
+/**
+ * Auto-tuned layout: gaps grow with whatever body is in focus, so tiny spheres
+ * fan apart instead of stacking when a giant fills the frame.
+ */
+export function buildAutoSteps(focus: number[], spacing = SPACING_DEFAULT): WealthStep[] {
+  const clamped = Math.min(SPACING_MAX, Math.max(SPACING_MIN, spacing));
+  const focusRadius = focus.reduce((max, i) => {
+    const s = rawSteps[i];
+    return s ? Math.max(max, calcRadius(s.wealth)) : max;
+  }, 0);
+  const floor = focusRadius * AUTO_GAP * (clamped / SPACING_DEFAULT);
+
+  const out: WealthStep[] = [];
+  rawSteps.forEach((s, i) => {
+    const radius = calcRadius(s.wealth);
+    let x = 0;
+    const p = out[i - 1];
+    if (p) {
+      const gap = Math.max(radius * clamped + p.radius * 0.2, floor);
+      x = p.x + p.radius + gap + radius;
+    }
+    out.push({
+      ...s,
+      index: i,
+      radius,
+      x,
+      y: radius,
+      radiusRatio: radius / BASE_RADIUS,
+      volumeRatio: s.wealth / BASE_WEALTH,
+    });
+  });
+  return out;
+}
+
+
 export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
 
 /** The median-household Earth: the reference body that is never removed. */
