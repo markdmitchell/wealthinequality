@@ -14,7 +14,7 @@ interface Props {
 }
 
 /** Below this angular size the body is drawn as a fixed-size marker instead. */
-const MIN_ANGULAR = 0.004;
+const MIN_ANGULAR = 0.0025;
 
 export function CelestialBody({ step, animate }: Props) {
   const fullRef = useRef<THREE.Group>(null);
@@ -51,7 +51,7 @@ export function CelestialBody({ step, animate }: Props) {
     if (markerRef.current) {
       markerRef.current.visible = tooSmall;
       // Constant apparent size, so a speck never disappears entirely.
-      const s = dist * 0.012;
+      const s = dist * 0.0016;
       markerRef.current.scale.setScalar(s);
     }
 
