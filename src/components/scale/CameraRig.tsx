@@ -108,8 +108,10 @@ export function CameraRig({ framed, reducedMotion, onView }: Props) {
     const delta = Math.min(rawDelta, 0.05);
 
     if (flying.current) {
-      // Frame-rate independent easing; slow enough that the pull-back reads as travel.
-      const k = 1 - Math.exp(-1.9 * delta);
+      // Frame-rate independent easing: fast enough to land in ~2s, slow enough
+      // that the pull-back still reads as travel.
+      const k = 1 - Math.exp(-2.9 * delta);
+
       const dir = camera.position.clone().sub(controls.target);
       let dist = dir.length();
       if (dist < 1e-6) {
