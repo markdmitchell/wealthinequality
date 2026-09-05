@@ -51,7 +51,7 @@ export function CelestialBody({ step, animate }: Props) {
     if (markerRef.current) {
       markerRef.current.visible = tooSmall;
       // Constant apparent size, so a speck never disappears entirely.
-      const s = dist * 0.004;
+      const s = dist * 0.0016;
       markerRef.current.scale.setScalar(s);
     }
 
