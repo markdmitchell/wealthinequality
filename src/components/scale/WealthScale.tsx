@@ -49,28 +49,8 @@ export function WealthScale() {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [viewWidth, setViewWidth] = useState(0);
-  const [spacing, setSpacing] = useState(SPACING_DEFAULT);
-  const [autoTune, setAutoTune] = useState(true);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
-
-  useEffect(() => {
-    const saved = Number(window.localStorage.getItem(SPACING_KEY));
-    if (Number.isFinite(saved) && saved >= SPACING_MIN && saved <= SPACING_MAX) setSpacing(saved);
-    const auto = window.localStorage.getItem(AUTO_KEY);
-    if (auto !== null) setAutoTune(auto === "true");
-  }, []);
-
-  const onSpacing = useCallback((value: number) => {
-    setSpacing(value);
-    window.localStorage.setItem(SPACING_KEY, String(value));
-  }, []);
-
-  const onAutoTune = useCallback((value: boolean) => {
-    setAutoTune(value);
-    window.localStorage.setItem(AUTO_KEY, String(value));
-  }, []);
-
 
   const focus = useMemo(
     () => (compareMode ? COMPARE_DEFAULT : [Math.max(0, index - 1), index]),
@@ -78,8 +58,8 @@ export function WealthScale() {
   );
 
   const steps = useMemo(
-    () => (autoTune ? buildAutoSteps(focus, spacing) : buildWealthSteps(spacing)),
-    [autoTune, focus, spacing],
+    () => buildAutoSteps(focus, SPACING_DEFAULT),
+    [focus],
   );
   const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
