@@ -2,11 +2,8 @@ import { Info, Layers, Route, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
   buildAutoSteps,
-  buildWealthSteps,
   COMPARE_DEFAULT,
   SPACING_DEFAULT,
-  SPACING_MAX,
-  SPACING_MIN,
   wealthSteps,
 } from "@/data/wealthSteps";
 import { CompareInset } from "./CompareInset";
@@ -15,9 +12,6 @@ import { LogRail } from "./LogRail";
 import { NavControls } from "./NavControls";
 import { ScaleBar } from "./ScaleBar";
 import { SourcesPanel } from "./SourcesPanel";
-
-const SPACING_KEY = "wealth-scale-spacing";
-const AUTO_KEY = "wealth-scale-spacing-auto";
 
 
 
@@ -55,28 +49,8 @@ export function WealthScale() {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [viewWidth, setViewWidth] = useState(0);
-  const [spacing, setSpacing] = useState(SPACING_DEFAULT);
-  const [autoTune, setAutoTune] = useState(true);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
-
-  useEffect(() => {
-    const saved = Number(window.localStorage.getItem(SPACING_KEY));
-    if (Number.isFinite(saved) && saved >= SPACING_MIN && saved <= SPACING_MAX) setSpacing(saved);
-    const auto = window.localStorage.getItem(AUTO_KEY);
-    if (auto !== null) setAutoTune(auto === "true");
-  }, []);
-
-  const onSpacing = useCallback((value: number) => {
-    setSpacing(value);
-    window.localStorage.setItem(SPACING_KEY, String(value));
-  }, []);
-
-  const onAutoTune = useCallback((value: boolean) => {
-    setAutoTune(value);
-    window.localStorage.setItem(AUTO_KEY, String(value));
-  }, []);
-
 
   const focus = useMemo(
     () => (compareMode ? COMPARE_DEFAULT : [Math.max(0, index - 1), index]),
@@ -84,8 +58,8 @@ export function WealthScale() {
   );
 
   const steps = useMemo(
-    () => (autoTune ? buildAutoSteps(focus, spacing) : buildWealthSteps(spacing)),
-    [autoTune, focus, spacing],
+    () => buildAutoSteps(focus, SPACING_DEFAULT),
+    [focus],
   );
   const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
@@ -193,55 +167,6 @@ export function WealthScale() {
           <LogRail index={index} onSelect={go} orientation="horizontal" />
         </div>
 
-        {/* Sphere spacing setting */}
-        <div className="mb-3 rounded-2xl border border-border bg-surface/85 px-4 py-3 backdrop-blur-xl">
-          <div className="flex items-baseline justify-between gap-3">
-            <label
-              htmlFor="spacing"
-              className="text-[0.68rem] font-semibold tracking-[0.12em] text-foreground/90 uppercase"
-            >
-              Sphere spacing
-            </label>
-            <span className="font-mono text-[0.68rem] text-muted-foreground">
-              {autoTune ? `auto · ${spacing.toFixed(2)}×` : `${spacing.toFixed(2)}×`}
-            </span>
-          </div>
-          <label className="mt-2 flex cursor-pointer items-center gap-2 text-[0.66rem] text-foreground/90">
-            <input
-              type="checkbox"
-              checked={autoTune}
-              onChange={(e) => onAutoTune(e.target.checked)}
-              className="size-4 accent-[var(--color-primary,#60a5fa)]"
-            />
-            Auto-tune to the focused sphere
-          </label>
-          <input
-            id="spacing"
-            type="range"
-            min={SPACING_MIN}
-            max={SPACING_MAX}
-            step={0.05}
-            value={spacing}
-            onChange={(e) => onSpacing(Number(e.target.value))}
-            className="mt-2 h-6 w-full accent-[var(--color-primary,#60a5fa)]"
-            aria-describedby="spacing-help"
-          />
-          <div className="mt-1 flex items-center justify-between gap-2">
-            <p id="spacing-help" className="text-[0.62rem] text-muted-foreground/80">
-              {autoTune
-                ? "Gaps grow with whatever sphere is in focus, so small bodies and their labels never stack. The slider scales the auto amount."
-                : "Fixed gap between bodies, in multiples of the larger sphere's radius."}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => onSpacing(SPACING_DEFAULT)}
-              className="shrink-0 rounded-full border border-border px-2 py-1 text-[0.62rem] font-semibold text-foreground transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
 
 
 
