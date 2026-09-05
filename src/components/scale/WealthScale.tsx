@@ -193,55 +193,6 @@ export function WealthScale() {
           <LogRail index={index} onSelect={go} orientation="horizontal" />
         </div>
 
-        {/* Sphere spacing setting */}
-        <div className="mb-3 rounded-2xl border border-border bg-surface/85 px-4 py-3 backdrop-blur-xl">
-          <div className="flex items-baseline justify-between gap-3">
-            <label
-              htmlFor="spacing"
-              className="text-[0.68rem] font-semibold tracking-[0.12em] text-foreground/90 uppercase"
-            >
-              Sphere spacing
-            </label>
-            <span className="font-mono text-[0.68rem] text-muted-foreground">
-              {autoTune ? `auto · ${spacing.toFixed(2)}×` : `${spacing.toFixed(2)}×`}
-            </span>
-          </div>
-          <label className="mt-2 flex cursor-pointer items-center gap-2 text-[0.66rem] text-foreground/90">
-            <input
-              type="checkbox"
-              checked={autoTune}
-              onChange={(e) => onAutoTune(e.target.checked)}
-              className="size-4 accent-[var(--color-primary,#60a5fa)]"
-            />
-            Auto-tune to the focused sphere
-          </label>
-          <input
-            id="spacing"
-            type="range"
-            min={SPACING_MIN}
-            max={SPACING_MAX}
-            step={0.05}
-            value={spacing}
-            onChange={(e) => onSpacing(Number(e.target.value))}
-            className="mt-2 h-6 w-full accent-[var(--color-primary,#60a5fa)]"
-            aria-describedby="spacing-help"
-          />
-          <div className="mt-1 flex items-center justify-between gap-2">
-            <p id="spacing-help" className="text-[0.62rem] text-muted-foreground/80">
-              {autoTune
-                ? "Gaps grow with whatever sphere is in focus, so small bodies and their labels never stack. The slider scales the auto amount."
-                : "Fixed gap between bodies, in multiples of the larger sphere's radius."}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => onSpacing(SPACING_DEFAULT)}
-              className="shrink-0 rounded-full border border-border px-2 py-1 text-[0.62rem] font-semibold text-foreground transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
 
 
 
