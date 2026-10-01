@@ -2,6 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
 import type { WealthStep } from "@/data/wealthSteps";
+import { getSceneViewportLayout, type ScreenRect } from "./viewportLayout";
 
 export type LabelNodes = Map<number, HTMLDivElement | null>;
 
@@ -10,18 +11,11 @@ interface Props {
   nodes: LabelNodes;
 }
 
-interface Rect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
 const LABEL_W = 150;
 const LABEL_H = 40;
 const ROW = 44;
 
-function overlaps(a: Rect, b: Rect): boolean {
+function overlaps(a: ScreenRect, b: ScreenRect): boolean {
   return (
     Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.y - b.y) < (a.h + b.h) / 2
   );
@@ -41,31 +35,18 @@ export function BodyLabels({ steps, nodes }: Props) {
   const vec = useRef(new THREE.Vector3());
 
   useFrame(() => {
-    const wide = size.width >= 1024;
-    // Keep clear of the info panel (left / bottom) and the log rail (right).
-    const padLeft = wide ? 420 : 20;
-    const padRight = wide ? 210 : 20;
-    const padTop = 104;
-    const padBottom = wide ? 48 : 360;
+    const layout = getSceneViewportLayout(size.width, size.height);
 
-    const safeTop = padTop;
-    const safeBottom = size.height - padBottom;
+    const safeTop = layout.top;
+    const safeBottom = size.height - layout.bottom;
     const rows = Math.max(1, Math.floor((safeBottom - safeTop) / ROW));
 
-    // Reserved HUD areas that labels must never cover.
-    const reserved: Rect[] = [
-      // header title block
-      { x: 180, y: 56, w: 360, h: 96 },
-      // header buttons / scale bar
-      { x: size.width - 180, y: 70, w: 360, h: 130 },
-    ];
-
-    const placed: Rect[] = [];
+    const placed: ScreenRect[] = [];
     let leftSlot = 0;
     let rightSlot = 0;
 
-    const fits = (r: Rect) =>
-      !reserved.some((q) => overlaps(r, q)) && !placed.some((q) => overlaps(r, q));
+    const fits = (r: ScreenRect) =>
+      !layout.reserved.some((q) => overlaps(r, q)) && !placed.some((q) => overlaps(r, q));
 
     for (const step of steps) {
       const el = nodes.get(step.index);
@@ -77,28 +58,35 @@ export function BodyLabels({ steps, nodes }: Props) {
 
       const outside =
         behind ||
-        rawX < padLeft ||
-        rawX > size.width - padRight ||
+        rawX < layout.left + LABEL_W / 2 ||
+        rawX > size.width - layout.right - LABEL_W / 2 ||
         rawY < safeTop ||
         rawY > safeBottom;
 
-      let rect: Rect;
+      let rect: ScreenRect;
 
       if (outside) {
         const toRight = !behind && rawX > size.width / 2;
         let slot = toRight ? rightSlot : leftSlot;
-        let candidate: Rect;
+        let candidate: ScreenRect = {
+          x: toRight
+            ? size.width - layout.right - LABEL_W / 2
+            : layout.left + LABEL_W / 2,
+          y: safeTop + LABEL_H / 2,
+          w: LABEL_W,
+          h: LABEL_H,
+        };
         // Walk slots (row, then wrap into the next column inward) until free.
         for (let guard = 0; guard < rows * 4; guard += 1, slot += 1) {
           const col = Math.floor(slot / rows);
           const row = slot % rows;
           const x = toRight
-            ? size.width - padRight - 70 - col * (LABEL_W + 12)
-            : padLeft + 70 + col * (LABEL_W + 12);
+            ? size.width - layout.right - LABEL_W / 2 - col * (LABEL_W + 12)
+            : layout.left + LABEL_W / 2 + col * (LABEL_W + 12);
           candidate = { x, y: safeTop + LABEL_H / 2 + row * ROW, w: LABEL_W, h: LABEL_H };
           if (fits(candidate)) break;
         }
-        rect = candidate!;
+        rect = candidate;
         if (toRight) rightSlot = slot + 1;
         else leftSlot = slot + 1;
       } else {

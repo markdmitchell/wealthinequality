@@ -3,10 +3,12 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { REFERENCE_STEP, type WealthStep } from "@/data/wealthSteps";
+import { getSceneViewportLayout } from "./viewportLayout";
 
 interface Props {
   /** Bodies that must all be inside the frame. */
   framed: WealthStep[];
+  compareMode: boolean;
   reducedMotion: boolean;
   onView?: ((viewWidth: number) => void) | undefined;
 }
@@ -27,7 +29,9 @@ function fitDistance(spanX: number, spanY: number, fovDeg: number, aspect: numbe
   return Math.max(distV, distH);
 }
 
-export function CameraRig({ framed, reducedMotion, onView }: Props) {
+const CANONICAL_DIRECTION = new THREE.Vector3(0.1, 0.14, 1).normalize();
+
+export function CameraRig({ framed, compareMode, reducedMotion, onView }: Props) {
   const controlsRef = useRef<Controls | null>(null);
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
@@ -58,11 +62,11 @@ export function CameraRig({ framed, reducedMotion, onView }: Props) {
 
     // Fit into the region of the viewport the UI does not cover, then shift the
     // aim so the framed bodies sit in that region rather than behind the panels.
-    const wide = size.width >= 1024;
-    const padL = wide ? 0.31 : 0.04;
-    const padR = wide ? 0.13 : 0.04;
-    const padT = 0.09;
-    const padB = wide ? 0.06 : 0.3;
+    const layout = getSceneViewportLayout(size.width, size.height);
+    const padL = layout.left / Math.max(1, size.width);
+    const padR = layout.right / Math.max(1, size.width);
+    const padT = layout.top / Math.max(1, size.height);
+    const padB = layout.bottom / Math.max(1, size.height);
     const usableX = Math.max(0.25, 1 - padL - padR);
     const usableY = Math.max(0.25, 1 - padT - padB);
 
@@ -92,14 +96,13 @@ export function CameraRig({ framed, reducedMotion, onView }: Props) {
       controls.maxDistance = dist * 40;
     }
 
-    if (reducedMotion && controls) {
+    if ((compareMode || reducedMotion) && controls) {
       controls.target.copy(desired.current.target);
-      const dir = new THREE.Vector3(0.1, 0.14, 1).normalize();
-      camera.position.copy(controls.target).addScaledVector(dir, dist);
+      camera.position.copy(controls.target).addScaledVector(CANONICAL_DIRECTION, dist);
       controls.update();
       flying.current = false;
     }
-  }, [framed, reducedMotion, camera, size.width, size.height]);
+  }, [framed, compareMode, reducedMotion, camera, size.width, size.height]);
 
 
   useFrame((state, rawDelta) => {
