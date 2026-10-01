@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Camera framing and screen-space labels must use `getSceneViewportLayout` so visible spheres and labels share identical panel-safe boundaries.
+- Journey views must frame the selected sphere with the median-household Earth at exact relative scale; labels identify truly subpixel bodies instead of inflating them.

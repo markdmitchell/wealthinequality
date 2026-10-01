@@ -221,6 +221,37 @@ export function buildAutoSteps(focus: number[], spacing = SPACING_DEFAULT): Weal
   return out;
 }
 
+/**
+ * Journey layout anchored on the median household. The selected body sits beside
+ * the Earth with an exact shared scale; changing steps moves the comparison body,
+ * never the reference. Vertical centring avoids hiding the tiny reference at the
+ * foot of a much larger sphere.
+ */
+export function buildAnchoredSteps(selectedIndex: number): WealthStep[] {
+  const steps = buildSteps(rawSteps);
+  const reference = steps[BASE_INDEX];
+  const selected = steps[selectedIndex];
+  if (!reference || !selected || selectedIndex === BASE_INDEX) return steps;
+
+  const largerRadius = Math.max(reference.radius, selected.radius);
+  const gap = largerRadius * 0.14;
+  const centreY = largerRadius;
+
+  return steps.map((step) => {
+    if (step.index === BASE_INDEX) {
+      return { ...step, x: 0, y: centreY };
+    }
+    if (step.index === selectedIndex) {
+      return {
+        ...step,
+        x: reference.radius + gap + selected.radius,
+        y: centreY,
+      };
+    }
+    return step;
+  });
+}
+
 
 
 export const wealthSteps: WealthStep[] = buildSteps(rawSteps);

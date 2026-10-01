@@ -1,12 +1,12 @@
 import { Info, Layers, Route, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  buildAnchoredSteps,
   buildAutoSteps,
   COMPARE_DEFAULT,
   SPACING_DEFAULT,
   wealthSteps,
 } from "@/data/wealthSteps";
-import { CompareInset } from "./CompareInset";
 import { InfoPanel } from "./InfoPanel";
 import { LogRail } from "./LogRail";
 import { NavControls } from "./NavControls";
@@ -52,14 +52,12 @@ export function WealthScale() {
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
 
-  const focus = useMemo(
-    () => (compareMode ? COMPARE_DEFAULT : [Math.max(0, index - 1), index]),
-    [compareMode, index],
-  );
-
   const steps = useMemo(
-    () => buildAutoSteps(focus, SPACING_DEFAULT),
-    [focus],
+    () =>
+      compareMode
+        ? buildAutoSteps(COMPARE_DEFAULT, SPACING_DEFAULT)
+        : buildAnchoredSteps(index),
+    [compareMode, index],
   );
   const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
@@ -120,7 +118,7 @@ export function WealthScale() {
             The Scale of Wealth
           </h1>
           <p className="mt-1 max-w-[16rem] text-xs text-muted-foreground">
-            Every sphere's volume matches the money. Each step keeps the one before it in frame.
+            Every sphere's volume matches the money. The median household remains the anchor.
           </p>
         </div>
         <div className="pointer-events-auto flex flex-col items-end gap-2">
@@ -207,9 +205,6 @@ export function WealthScale() {
         ) : (
           <>
             <InfoPanel step={step} index={index} total={total} />
-            <div className="mt-3">
-              <CompareInset step={step} />
-            </div>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <NavControls
                 index={index}
