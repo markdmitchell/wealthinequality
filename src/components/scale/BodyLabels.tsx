@@ -58,8 +58,8 @@ export function BodyLabels({ steps, nodes }: Props) {
 
       const outside =
         behind ||
-        rawX < layout.left ||
-        rawX > size.width - layout.right ||
+        rawX < layout.left + LABEL_W / 2 ||
+        rawX > size.width - layout.right - LABEL_W / 2 ||
         rawY < safeTop ||
         rawY > safeBottom;
 
@@ -69,7 +69,9 @@ export function BodyLabels({ steps, nodes }: Props) {
         const toRight = !behind && rawX > size.width / 2;
         let slot = toRight ? rightSlot : leftSlot;
         let candidate: ScreenRect = {
-          x: toRight ? size.width - layout.right - 70 : layout.left + 70,
+          x: toRight
+            ? size.width - layout.right - LABEL_W / 2
+            : layout.left + LABEL_W / 2,
           y: safeTop + LABEL_H / 2,
           w: LABEL_W,
           h: LABEL_H,
@@ -79,8 +81,8 @@ export function BodyLabels({ steps, nodes }: Props) {
           const col = Math.floor(slot / rows);
           const row = slot % rows;
           const x = toRight
-            ? size.width - layout.right - 70 - col * (LABEL_W + 12)
-            : layout.left + 70 + col * (LABEL_W + 12);
+            ? size.width - layout.right - LABEL_W / 2 - col * (LABEL_W + 12)
+            : layout.left + LABEL_W / 2 + col * (LABEL_W + 12);
           candidate = { x, y: safeTop + LABEL_H / 2 + row * ROW, w: LABEL_W, h: LABEL_H };
           if (fits(candidate)) break;
         }
