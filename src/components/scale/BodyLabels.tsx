@@ -45,7 +45,7 @@ export function BodyLabels({ steps, nodes }: Props) {
     let leftSlot = 0;
     let rightSlot = 0;
 
-    const fits = (r: Rect) =>
+    const fits = (r: ScreenRect) =>
       !layout.reserved.some((q) => overlaps(r, q)) && !placed.some((q) => overlaps(r, q));
 
     for (const step of steps) {
