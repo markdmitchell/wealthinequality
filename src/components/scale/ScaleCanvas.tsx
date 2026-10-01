@@ -9,11 +9,11 @@ import { disposeTextureCache } from "./textures";
 
 interface Props {
   step: WealthStep;
-  /** Journey mode frames current + previous; compare mode frames a chosen set. */
+  /** Journey mode frames current + median anchor; compare mode frames a chosen set. */
   compare: number[] | null;
   reducedMotion: boolean;
   onView?: ((viewWidth: number) => void) | undefined;
-  /** Layout rebuilt for the user's spacing factor. */
+  /** Layout rebuilt for the current anchored comparison. */
   steps?: WealthStep[] | undefined;
 }
 
@@ -33,8 +33,9 @@ function Scene({ step, compare, reducedMotion, onView, visible, labelNodes, all 
         .filter((s): s is WealthStep => Boolean(s))
         .sort((a, b) => a.x - b.x);
     }
-    const prev = all[step.index - 1];
-    return prev ? [prev, step] : [step];
+    const reference = all[BASE_INDEX];
+    if (!reference || step.index === BASE_INDEX) return [step];
+    return [reference, step].sort((a, b) => a.x - b.x);
   }, [compare, step, all]);
 
   const activeSet = useMemo(
@@ -74,8 +75,11 @@ export function ScaleCanvas(props: Props) {
   const all = steps ?? wealthSteps;
 
   const visible = useMemo(
-    () => all.filter((s) => !compare || compare.length === 0 || compare.includes(s.index)),
-    [compare, all],
+    () => {
+      if (compare && compare.length > 0) return all.filter((s) => compare.includes(s.index));
+      return all.filter((s) => s.index === BASE_INDEX || s.index === step.index);
+    },
+    [compare, all, step.index],
   );
 
   const activeSet = useMemo(
