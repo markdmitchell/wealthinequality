@@ -10,7 +10,6 @@ import {
 import { InfoPanel } from "./InfoPanel";
 import { LogRail } from "./LogRail";
 import { NavControls } from "./NavControls";
-import { ScaleBar } from "./ScaleBar";
 import { SourcesPanel } from "./SourcesPanel";
 
 
@@ -48,7 +47,6 @@ export function WealthScale() {
   const [index, setIndex] = useState(1);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
-  const [viewWidth, setViewWidth] = useState(0);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
 
@@ -105,7 +103,6 @@ export function WealthScale() {
             steps={steps}
             compare={compare}
             reducedMotion={reducedMotion}
-            onView={setViewWidth}
           />
 
         </Suspense>
@@ -146,11 +143,6 @@ export function WealthScale() {
               <span className="sm:hidden">Sources</span>
             </button>
           </div>
-          {webgl && viewWidth > 0 && (
-            <div className="hidden sm:block">
-              <ScaleBar viewWidth={viewWidth} />
-            </div>
-          )}
         </div>
       </header>
 
@@ -160,7 +152,7 @@ export function WealthScale() {
       </div>
 
       {/* Info panel: side on desktop, bottom sheet on mobile */}
-      <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 max-h-[64dvh] overflow-y-auto p-3 sm:p-4 lg:inset-x-auto lg:top-1/2 lg:bottom-auto lg:left-8 lg:max-h-none lg:w-[22rem] lg:-translate-y-1/2 lg:overflow-visible lg:p-0">
+      <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 max-h-[64dvh] overflow-y-auto p-3 sm:p-4 lg:inset-x-auto lg:top-1/2 lg:bottom-auto lg:left-8 lg:max-h-none lg:w-[23.5rem] lg:-translate-y-1/2 lg:overflow-visible lg:p-0">
         <div className="mb-2 lg:hidden">
           <LogRail index={index} onSelect={go} orientation="horizontal" />
         </div>
