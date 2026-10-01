@@ -40,8 +40,8 @@ export function InfoPanel({ step, index, total }: Props) {
       </div>
 
       <p
-        className="mb-5 font-mono text-[clamp(1.4rem,4vw,2.1rem)] leading-none font-bold tracking-tight"
-        style={{ color: step.accent }}
+        className="mb-5 font-mono leading-none font-bold tracking-tight whitespace-nowrap"
+        style={{ color: step.accent, fontSize: valueSize }}
       >
         {step.value}
       </p>

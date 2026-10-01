@@ -10,7 +10,6 @@ import {
 import { InfoPanel } from "./InfoPanel";
 import { LogRail } from "./LogRail";
 import { NavControls } from "./NavControls";
-import { ScaleBar } from "./ScaleBar";
 import { SourcesPanel } from "./SourcesPanel";
 
 
