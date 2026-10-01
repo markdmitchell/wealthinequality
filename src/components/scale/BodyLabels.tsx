@@ -119,11 +119,23 @@ export function BodyLabels({ steps, nodes }: Props) {
       const horizontal = Math.abs(dx) / labelW > Math.abs(dy) / LABEL_H;
       const attachX = horizontal ? rect.x + Math.sign(dx || 1) * labelW / 2 : Math.min(rect.x + labelW / 2, Math.max(rect.x - labelW / 2, targetX));
       const attachY = horizontal ? Math.min(rect.y + LABEL_H / 2, Math.max(rect.y - LABEL_H / 2, targetY)) : rect.y + Math.sign(dy || 1) * LABEL_H / 2;
-      const elbowX = horizontal ? (attachX + targetX) / 2 : attachX;
-      const elbowY = horizontal ? attachY : (attachY + targetY) / 2;
-      node.path.setAttribute("d", `M ${attachX} ${attachY} L ${elbowX} ${elbowY} L ${targetX} ${targetY}`);
-      node.dot.setAttribute("cx", String(targetX));
-      node.dot.setAttribute("cy", String(targetY));
+
+      // Large spheres: terminate the leader on the rim facing the plate so the
+      // line never crosses the surface. Tiny specks keep the exact center dot.
+      let endX = targetX;
+      let endY = targetY;
+      if (screenRadius >= 14 && !behind) {
+        const len = Math.hypot(dx, dy);
+        if (len > 0.001) {
+          endX = targetX - (dx / len) * screenRadius;
+          endY = targetY - (dy / len) * screenRadius;
+        }
+      }
+      const elbowX = horizontal ? (attachX + endX) / 2 : attachX;
+      const elbowY = horizontal ? attachY : (attachY + endY) / 2;
+      node.path.setAttribute("d", `M ${attachX} ${attachY} L ${elbowX} ${elbowY} L ${endX} ${endY}`);
+      node.dot.setAttribute("cx", String(endX));
+      node.dot.setAttribute("cy", String(endY));
       node.plate.dataset["offFrame"] = behind || rawX !== targetX || rawY !== targetY ? "true" : "false";
     }
   });

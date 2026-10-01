@@ -8,6 +8,13 @@ interface Props {
 
 export function InfoPanel({ step, index, total }: Props) {
   const barPct = Math.min(100, Math.max(2, (Math.log10(step.wealth) / Math.log10(7.8e12)) * 100));
+  // Long values (e.g. "$7,800,000,000,000") shrink so they never overflow the card.
+  const valueSize =
+    step.value.length > 15
+      ? "clamp(0.95rem,2.6vw,1.35rem)"
+      : step.value.length > 11
+        ? "clamp(1.15rem,3.2vw,1.7rem)"
+        : "clamp(1.4rem,4vw,2.1rem)";
 
   return (
     <section
