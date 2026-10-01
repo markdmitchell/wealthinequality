@@ -58,7 +58,12 @@ function Scene({ step, compare, reducedMotion, onView, visible, labelNodes, all 
         />
       ))}
       <BodyLabels steps={visible} nodes={labelNodes} />
-      <CameraRig framed={framed} reducedMotion={reducedMotion} onView={onView} />
+      <CameraRig
+        framed={framed}
+        compareMode={Boolean(compare?.length)}
+        reducedMotion={reducedMotion}
+        onView={onView}
+      />
     </>
   );
 }
