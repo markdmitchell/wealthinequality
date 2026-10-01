@@ -9,11 +9,11 @@ import { disposeTextureCache } from "./textures";
 
 interface Props {
   step: WealthStep;
-  /** Journey mode frames current + previous; compare mode frames a chosen set. */
+  /** Journey mode frames current + median anchor; compare mode frames a chosen set. */
   compare: number[] | null;
   reducedMotion: boolean;
   onView?: ((viewWidth: number) => void) | undefined;
-  /** Layout rebuilt for the user's spacing factor. */
+  /** Layout rebuilt for the current anchored comparison. */
   steps?: WealthStep[] | undefined;
 }
 

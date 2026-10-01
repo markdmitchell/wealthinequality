@@ -1,4 +1,4 @@
-import { formatRatio, ratioSentence, wealthSteps, type WealthStep } from "@/data/wealthSteps";
+import { formatRatio, type WealthStep } from "@/data/wealthSteps";
 
 interface Props {
   step: WealthStep;
@@ -8,8 +8,6 @@ interface Props {
 
 export function InfoPanel({ step, index, total }: Props) {
   const barPct = Math.min(100, Math.max(2, (Math.log10(step.wealth) / Math.log10(7.8e12)) * 100));
-  const prev = wealthSteps[index - 1];
-  const vsPrev = ratioSentence(step, prev);
 
   return (
     <section
@@ -40,12 +38,6 @@ export function InfoPanel({ step, index, total }: Props) {
       >
         {step.value}
       </p>
-
-      {vsPrev && (
-        <p className="mb-4 border-l-2 pl-3 text-sm leading-snug text-muted-foreground" style={{ borderColor: `${step.accent}66` }}>
-          {vsPrev}
-        </p>
-      )}
 
       <div className="mb-5">
         <p className="mb-2 text-[0.68rem] font-semibold tracking-[0.1em] text-muted-foreground uppercase">
