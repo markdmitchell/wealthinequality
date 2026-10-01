@@ -61,8 +61,19 @@ export function BodyLabels({ steps, nodes }: Props) {
 
       const targetX = Math.min(size.width, Math.max(0, rawX));
       const targetY = Math.min(size.height, Math.max(0, rawY));
-      const xOffsets = step.index === 1 ? [-labelW * 0.65, labelW * 0.65, 0] : [labelW * 0.65, -labelW * 0.65, 0];
-      const yOffsets = [-LABEL_H - GAP, LABEL_H + GAP, 0];
+
+      // Projected on-screen radius: keeps the plate fully outside the sphere.
+      const edge = vec.current.set(step.x + step.radius, step.y, 0).project(camera);
+      const edgeX = ((edge.x + 1) / 2) * size.width;
+      const edgeY = ((1 - edge.y) / 2) * size.height;
+      const screenRadius = behind ? 0 : Math.hypot(edgeX - rawX, edgeY - rawY);
+      const clearance = screenRadius + GAP;
+
+      const xOffsets =
+        step.index === 1
+          ? [-(clearance + labelW / 2), clearance + labelW / 2, 0]
+          : [clearance + labelW / 2, -(clearance + labelW / 2), 0];
+      const yOffsets = [-(clearance + LABEL_H / 2), clearance + LABEL_H / 2, 0];
       let rect: ScreenRect = {
         x: Math.min(safeRight - labelW / 2, Math.max(safeLeft + labelW / 2, targetX)),
         y: Math.min(safeBottom - LABEL_H / 2, Math.max(safeTop + LABEL_H / 2, targetY)),
