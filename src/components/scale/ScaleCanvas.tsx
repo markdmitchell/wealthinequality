@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { BASE_INDEX, wealthSteps, type WealthStep } from "@/data/wealthSteps";
+import { BASE_INDEX, formatRatio, wealthSteps, type WealthStep } from "@/data/wealthSteps";
 import { BodyLabels, type LabelNodes } from "./BodyLabels";
 import { CameraRig } from "./CameraRig";
 import { CelestialBody } from "./CelestialBody";
@@ -104,25 +104,53 @@ export function ScaleCanvas(props: Props) {
       <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden" aria-hidden>
         {visible.map((s) => {
           const active = activeSet.has(s.index);
+          const reference = s.index === BASE_INDEX;
           return (
-            <div
-              key={s.title}
-              ref={(el) => {
-                labelNodes.set(s.index, el);
-              }}
-              className="absolute top-0 left-0 whitespace-nowrap text-center will-change-transform"
-            >
-              <span
-                className="rounded-full border px-2 py-0.5 text-[0.6rem] font-bold tracking-[0.08em] uppercase backdrop-blur-sm"
-                style={{
-                  color: s.accent,
-                  borderColor: active ? `${s.accent}cc` : `${s.accent}55`,
-                  background: active ? "rgba(3,5,12,0.88)" : "rgba(3,5,12,0.66)",
+            <div key={s.title}>
+              <svg className="absolute inset-0 size-full overflow-visible" aria-hidden>
+                <path
+                  ref={(el) => {
+                    const current = labelNodes.get(s.index) ?? { plate: null, path: null, dot: null };
+                    labelNodes.set(s.index, { ...current, path: el });
+                  }}
+                  fill="none"
+                  stroke={s.accent}
+                  strokeOpacity={active || reference ? 0.72 : 0.42}
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <circle
+                  ref={(el) => {
+                    const current = labelNodes.get(s.index) ?? { plate: null, path: null, dot: null };
+                    labelNodes.set(s.index, { ...current, dot: el });
+                  }}
+                  r="2.5"
+                  fill={s.accent}
+                  stroke={s.accent}
+                  strokeWidth="4"
+                  strokeOpacity="0.22"
+                />
+              </svg>
+              <div
+                ref={(el) => {
+                  const current = labelNodes.get(s.index) ?? { plate: null, path: null, dot: null };
+                  labelNodes.set(s.index, { ...current, plate: el });
                 }}
+                className="absolute top-0 left-0 w-36 border border-border border-l-2 bg-callout px-3 py-2 text-left shadow-xl backdrop-blur-md transition-transform duration-200 ease-out will-change-transform sm:w-44"
+                style={{ borderLeftColor: s.accent }}
               >
-                {s.title}
-              </span>
-              <span className="mt-0.5 block text-[0.55rem] text-white/70">{s.value}</span>
+                <span className="flex items-center gap-1.5 font-mono text-[0.5rem] font-bold tracking-[0.12em] uppercase" style={{ color: s.accent }}>
+                  <span className="size-1.5 rounded-full" style={{ backgroundColor: s.accent }} />
+                  {reference ? "Reference anchor" : active ? "Selected scale" : "Comparison"}
+                </span>
+                <strong className="mt-0.5 block truncate text-[0.68rem] leading-tight font-semibold text-foreground">
+                  {s.title}
+                </strong>
+                <span className="mt-0.5 flex items-baseline justify-between gap-2 font-mono text-[0.58rem] text-callout-muted">
+                  <span>{s.value}</span>
+                  {!reference && <span className="text-[0.48rem]">{formatRatio(s.volumeRatio)} vol.</span>}
+                </span>
+              </div>
             </div>
           );
         })}

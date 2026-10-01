@@ -4,16 +4,23 @@ import * as THREE from "three";
 import type { WealthStep } from "@/data/wealthSteps";
 import { getSceneViewportLayout, type ScreenRect } from "./viewportLayout";
 
-export type LabelNodes = Map<number, HTMLDivElement | null>;
+export interface CalloutNodes {
+  plate: HTMLDivElement | null;
+  path: SVGPathElement | null;
+  dot: SVGCircleElement | null;
+}
+
+export type LabelNodes = Map<number, CalloutNodes>;
 
 interface Props {
   steps: WealthStep[];
   nodes: LabelNodes;
 }
 
-const LABEL_W = 150;
-const LABEL_H = 40;
-const ROW = 44;
+const DESKTOP_W = 176;
+const MOBILE_W = 144;
+const LABEL_H = 62;
+const GAP = 18;
 
 function overlaps(a: ScreenRect, b: ScreenRect): boolean {
   return (
@@ -22,12 +29,9 @@ function overlaps(a: ScreenRect, b: ScreenRect): boolean {
 }
 
 /**
- * Projects every body's centre to screen space each frame and drives a DOM
- * overlay. Bodies that fall outside the frame (or are far too small to see)
- * park their label in stacked columns at the nearest safe edge. Columns wrap
- * inward when they run out of vertical room, and every placement is tested
- * against the reserved UI panel rects plus previously placed labels, so labels
- * never sit on the HUD or on one another at extreme zoom levels.
+ * Projects every body's true centre to screen space and places a collision-safe
+ * callout plate nearby. An SVG leader retains the exact projected endpoint even
+ * when the sphere is too small for a pixel, so annotation never alters geometry.
  */
 export function BodyLabels({ steps, nodes }: Props) {
   const camera = useThree((s) => s.camera);
@@ -36,87 +40,80 @@ export function BodyLabels({ steps, nodes }: Props) {
 
   useFrame(() => {
     const layout = getSceneViewportLayout(size.width, size.height);
-
+    const labelW = size.width < 640 ? MOBILE_W : DESKTOP_W;
     const safeTop = layout.top;
     const safeBottom = size.height - layout.bottom;
-    const rows = Math.max(1, Math.floor((safeBottom - safeTop) / ROW));
+    const safeLeft = layout.left;
+    const safeRight = size.width - layout.right;
 
     const placed: ScreenRect[] = [];
-    let leftSlot = 0;
-    let rightSlot = 0;
 
     const fits = (r: ScreenRect) =>
       !layout.reserved.some((q) => overlaps(r, q)) && !placed.some((q) => overlaps(r, q));
 
     for (const step of steps) {
-      const el = nodes.get(step.index);
-      if (!el) continue;
+      const node = nodes.get(step.index);
+      if (!node?.plate || !node.path || !node.dot) continue;
       const v = vec.current.set(step.x, step.y, 0).project(camera);
       const behind = v.z > 1;
       const rawX = ((v.x + 1) / 2) * size.width;
       const rawY = ((1 - v.y) / 2) * size.height;
 
-      const outside =
-        behind ||
-        rawX < layout.left + LABEL_W / 2 ||
-        rawX > size.width - layout.right - LABEL_W / 2 ||
-        rawY < safeTop ||
-        rawY > safeBottom;
+      const targetX = Math.min(size.width, Math.max(0, rawX));
+      const targetY = Math.min(size.height, Math.max(0, rawY));
+      const xOffsets = step.index === 1 ? [-labelW * 0.65, labelW * 0.65, 0] : [labelW * 0.65, -labelW * 0.65, 0];
+      const yOffsets = [-LABEL_H - GAP, LABEL_H + GAP, 0];
+      let rect: ScreenRect = {
+        x: Math.min(safeRight - labelW / 2, Math.max(safeLeft + labelW / 2, targetX)),
+        y: Math.min(safeBottom - LABEL_H / 2, Math.max(safeTop + LABEL_H / 2, targetY)),
+        w: labelW,
+        h: LABEL_H,
+      };
 
-      let rect: ScreenRect;
-
-      if (outside) {
-        const toRight = !behind && rawX > size.width / 2;
-        let slot = toRight ? rightSlot : leftSlot;
-        let candidate: ScreenRect = {
-          x: toRight
-            ? size.width - layout.right - LABEL_W / 2
-            : layout.left + LABEL_W / 2,
-          y: safeTop + LABEL_H / 2,
-          w: LABEL_W,
-          h: LABEL_H,
-        };
-        // Walk slots (row, then wrap into the next column inward) until free.
-        for (let guard = 0; guard < rows * 4; guard += 1, slot += 1) {
-          const col = Math.floor(slot / rows);
-          const row = slot % rows;
-          const x = toRight
-            ? size.width - layout.right - LABEL_W / 2 - col * (LABEL_W + 12)
-            : layout.left + LABEL_W / 2 + col * (LABEL_W + 12);
-          candidate = { x, y: safeTop + LABEL_H / 2 + row * ROW, w: LABEL_W, h: LABEL_H };
-          if (fits(candidate)) break;
-        }
-        rect = candidate;
-        if (toRight) rightSlot = slot + 1;
-        else leftSlot = slot + 1;
-      } else {
-        rect = { x: rawX, y: rawY, w: LABEL_W, h: LABEL_H };
-        // Nudge up, then down, out of anything already occupying this spot.
-        let guard = 0;
-        while (guard < 10 && !fits(rect)) {
-          rect = { ...rect, y: rect.y - ROW };
-          guard += 1;
-        }
-        if (!fits(rect)) {
-          rect = { x: rawX, y: rawY, w: LABEL_W, h: LABEL_H };
-          guard = 0;
-          while (guard < 10 && !fits(rect)) {
-            rect = { ...rect, y: rect.y + ROW };
-            guard += 1;
+      outer: for (const yOffset of yOffsets) {
+        for (const xOffset of xOffsets) {
+          const candidate = {
+            x: Math.min(safeRight - labelW / 2, Math.max(safeLeft + labelW / 2, targetX + xOffset)),
+            y: Math.min(safeBottom - LABEL_H / 2, Math.max(safeTop + LABEL_H / 2, targetY + yOffset)),
+            w: labelW,
+            h: LABEL_H,
+          };
+          if (fits(candidate)) {
+            rect = candidate;
+            break outer;
           }
         }
-        rect = {
-          ...rect,
-          y: Math.min(safeBottom - LABEL_H / 2, Math.max(safeTop + LABEL_H / 2, rect.y)),
-        };
+      }
+
+      if (!fits(rect)) {
+        for (let y = safeTop + LABEL_H / 2; y <= safeBottom - LABEL_H / 2; y += LABEL_H + GAP) {
+          const candidate = {
+            x: targetX > size.width / 2 ? safeRight - labelW / 2 : safeLeft + labelW / 2,
+            y,
+            w: labelW,
+            h: LABEL_H,
+          };
+          if (fits(candidate)) {
+            rect = candidate;
+            break;
+          }
+        }
       }
 
       placed.push(rect);
-      el.style.transform = `translate3d(${Math.round(rect.x)}px, ${Math.round(
-        rect.y + LABEL_H / 2,
-      )}px, 0) translate(-50%, -100%)`;
-      el.style.opacity = outside ? "0.8" : "1";
-      el.dataset["offFrame"] = outside ? "true" : "false";
+      node.plate.style.transform = `translate3d(${Math.round(rect.x)}px, ${Math.round(rect.y)}px, 0) translate(-50%, -50%)`;
+
+      const dx = targetX - rect.x;
+      const dy = targetY - rect.y;
+      const horizontal = Math.abs(dx) / labelW > Math.abs(dy) / LABEL_H;
+      const attachX = horizontal ? rect.x + Math.sign(dx || 1) * labelW / 2 : Math.min(rect.x + labelW / 2, Math.max(rect.x - labelW / 2, targetX));
+      const attachY = horizontal ? Math.min(rect.y + LABEL_H / 2, Math.max(rect.y - LABEL_H / 2, targetY)) : rect.y + Math.sign(dy || 1) * LABEL_H / 2;
+      const elbowX = horizontal ? (attachX + targetX) / 2 : attachX;
+      const elbowY = horizontal ? attachY : (attachY + targetY) / 2;
+      node.path.setAttribute("d", `M ${attachX} ${attachY} L ${elbowX} ${elbowY} L ${targetX} ${targetY}`);
+      node.dot.setAttribute("cx", String(targetX));
+      node.dot.setAttribute("cy", String(targetY));
+      node.plate.dataset["offFrame"] = behind || rawX !== targetX || rawY !== targetY ? "true" : "false";
     }
   });
 
