@@ -3,7 +3,6 @@ import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { z } from "zod";
 import {
   BASE_WEALTH,
-  calcRadius,
   formatRatio,
   sources,
   wealthSteps,
@@ -96,6 +95,3 @@ export async function handleAsk(request: Request) {
     runIdFetch,
   );
 }
-
-// keep calcRadius referenced for future computed answers
-void calcRadius;

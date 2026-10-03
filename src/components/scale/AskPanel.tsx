@@ -113,10 +113,7 @@ export function AskPanel({ onClose }: { onClose: () => void }) {
       <Conversation className="min-h-0 flex-1">
         <ConversationContent className="gap-5 px-4 py-4">
           {messages.length === 0 ? (
-            <ConversationEmptyState
-              title="Ask about any comparison"
-              description="Answers are based on the figures and volume scale used in this visualization."
-            >
+            <ConversationEmptyState>
               <div className="mt-2 flex w-full flex-col gap-2">
                 <p className="text-sm font-semibold text-foreground">Ask about any comparison</p>
                 <p className="text-xs text-muted-foreground">
