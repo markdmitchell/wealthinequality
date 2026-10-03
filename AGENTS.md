@@ -11,3 +11,4 @@
 
 - Camera framing and screen-space labels must use `getSceneViewportLayout` so visible spheres and labels share identical panel-safe boundaries.
 - Journey views must frame the selected sphere with the median-household Earth at exact relative scale; labels identify truly subpixel bodies instead of inflating them.
+- The visitor Q&A ("Ask") streams through the /api/ask server route with a system prompt built from wealthSteps data; keep figures sourced from that data so answers match the visualization.

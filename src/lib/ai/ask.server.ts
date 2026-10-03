@@ -2,7 +2,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { z } from "zod";
 import {
-  BASE_WEALTH,
+
   formatRatio,
   sources,
   wealthSteps,
@@ -29,7 +29,7 @@ function buildSystemPrompt() {
   return `You are the guide for "The Scale of Wealth", an interactive 3D visualization of US wealth inequality.
 
 How the scale works:
-- Every sphere's VOLUME is proportional to the money it represents, so radius = 10 × cube-root(wealth / ${BASE_WEALTH}).
+- Every sphere's VOLUME is proportional to the money it represents, so radius grows with the cube root of (wealth / median household). Never mention internal scene units or code constants.
 - The median US household (net worth $192,900) is the Earth: the fixed anchor every other sphere is compared against at exact relative size.
 - Because of the cube root, a 1,000,000× difference in wealth looks like only a 100× difference in width. Explain this when relevant — it means the visual already understates the gap.
 
