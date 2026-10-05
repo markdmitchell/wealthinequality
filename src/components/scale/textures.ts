@@ -306,7 +306,7 @@ function iceTexture() {
 function starSurfaceTexture(color: number) {
   const n = makeNoise(color & 0xffff);
   const base = rgb(color);
-  const hot = base.map((c) => Math.min(255, c * 1.25 + 60));
+  const hot = base.map((c) => Math.min(255, c * 1.12 + 30));
   const cool = base.map((c) => c * 0.55);
   return finish(
     paint(1024, 512, (_u, _v, x, y, z) => {

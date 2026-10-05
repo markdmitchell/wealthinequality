@@ -64,7 +64,7 @@ const starFragment = /* glsl */ `
     vec3 col = mix(a, b, 0.5 + 0.5 * sin(uTime * 0.35));
     float mu = max(dot(vNormal, vView), 0.0);
     float limb = 0.4 + 0.6 * pow(mu, 0.55);
-    col = mix(uLimb, col, limb) * (0.75 + 0.55 * limb);
+    col = mix(uLimb, col, limb) * (0.55 + 0.5 * limb);
     gl_FragColor = vec4(col, 1.0);
   }
 `;
