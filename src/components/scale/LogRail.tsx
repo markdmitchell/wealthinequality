@@ -22,6 +22,16 @@ function pct(wealth: number) {
   return ((Math.log10(wealth) - MIN_LOG) / (MAX_LOG - MIN_LOG)) * 100;
 }
 
+/** Rail positions nudged apart so neighbouring labels never overlap. */
+const MIN_SEP = 5;
+const railPcts = (() => {
+  const out = wealthSteps.map((s) => pct(s.wealth));
+  for (let i = out.length - 2; i >= 0; i--) {
+    if (out[i + 1]! - out[i]! < MIN_SEP) out[i] = out[i + 1]! - MIN_SEP;
+  }
+  return out.map((p) => Math.max(0, p));
+})();
+
 /**
  * Log-scale rail: stops are positioned by log10(wealth), so twelve orders of
  * magnitude become a distance you can see yourself travel.
@@ -97,8 +107,8 @@ export function LogRail({ index, onSelect, orientation = "vertical" }: Props) {
             type="button"
             onClick={() => onSelect(i)}
             aria-current={isActive ? "step" : undefined}
-            className="group absolute left-0 flex min-h-8 -translate-y-1/2 items-center gap-2 rounded-lg pr-2 pl-1.5 text-left text-[0.7rem] font-semibold whitespace-nowrap transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            style={{ bottom: `${pct(s.wealth)}%`, color: isActive ? s.accent : undefined }}
+            className="group absolute left-0 flex min-h-7 -translate-y-1/2 items-center gap-2 rounded-lg pr-2 pl-1.5 text-left text-[0.7rem] font-semibold whitespace-nowrap transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            style={{ bottom: `${railPcts[i]}%`, color: isActive ? s.accent : undefined }}
           >
             <span
               aria-hidden

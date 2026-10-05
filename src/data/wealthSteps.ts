@@ -89,6 +89,18 @@ const rawSteps: WealthStepInput[] = [
     source: "scf",
   },
   {
+    title: "A Single Billionaire",
+    value: "$1,000,000,000",
+    desc: "The entry ticket to the billionaire club. One billion dollars is more than 5,000 times the median family's net worth — a ringed giant roughly 17× the Earth's width.",
+    wealth: 1_000_000_000,
+    color: 0xd6a35c,
+    accent: "#f0c27b",
+    emoji: "💰",
+    bodyType: "gas",
+    bgTint: "#140c02",
+    source: "billionaire-threshold",
+  },
+  {
     title: "The Richest Person",
     value: "$250,000,000,000",
     desc: "The world's richest individual. On this scale his wealth becomes the Sun — over a million times the volume of the Earth that stood for the median family.",
@@ -99,6 +111,18 @@ const rawSteps: WealthStepInput[] = [
     bodyType: "star",
     bgTint: "#160f00",
     source: "billionaire-index",
+  },
+  {
+    title: "Bottom 50% Combined",
+    value: "$3,800,000,000,000",
+    desc: "The combined net worth of the poorest half of US households — about 66 million families. Together they hold less than half of what roughly 900 billionaires own.",
+    wealth: 3_800_000_000_000,
+    color: 0xb4374a,
+    accent: "#f0899a",
+    emoji: "👥",
+    bodyType: "giant-star",
+    bgTint: "#12030a",
+    source: "dfa-bottom50",
   },
   {
     title: "All US Billionaires",
@@ -261,7 +285,7 @@ export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
 
 
 /** Bodies shown side by side by default in compare mode. */
-export const COMPARE_DEFAULT = [1, 2, 3, 4];
+export const COMPARE_DEFAULT = [1, 2, 3, 5];
 
 export const LUMINOUS: BodyType[] = ["star", "giant-star", "supergiant"];
 
@@ -330,6 +354,19 @@ export const sources: SourceEntry[] = [
     id: "forbes",
     label: "Combined US billionaire wealth",
     detail: "Forbes 400 / Americans for Tax Fairness tallies of aggregate US billionaire wealth.",
+    asOf: "2024",
+  },
+  {
+    id: "billionaire-threshold",
+    label: "A single billionaire",
+    detail: "The $1 billion net-worth threshold used by Forbes and Bloomberg to define a billionaire.",
+    asOf: "Definition",
+  },
+  {
+    id: "dfa-bottom50",
+    label: "Combined wealth of the bottom 50%",
+    detail:
+      "Federal Reserve Distributional Financial Accounts: total net worth held by the bottom half of US households, rounded.",
     asOf: "2024",
   },
   {
