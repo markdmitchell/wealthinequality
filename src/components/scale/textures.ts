@@ -2,8 +2,9 @@ import * as THREE from "three";
 import type { BodyType } from "@/data/wealthSteps";
 
 /**
- * Procedural canvas textures for the celestial bodies. Every texture is
- * generated once, cached by key, and disposed together via disposeTextureCache().
+ * Procedural textures for the celestial bodies. Surfaces are sampled from
+ * seamless 3D fractal noise (wrapped around a cylinder so the longitude seam
+ * never shows), generated once, cached by key, and disposed together.
  */
 
 const cache = new Map<string, THREE.Texture>();
@@ -33,6 +34,7 @@ function finish(c: HTMLCanvasElement, srgb = true) {
   const tex = new THREE.CanvasTexture(c);
   if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
+  tex.wrapS = THREE.RepeatWrapping;
   return tex;
 }
 
@@ -40,233 +42,280 @@ function hex(color: number) {
   return "#" + color.toString(16).padStart(6, "0");
 }
 
+function rgb(color: number): [number, number, number] {
+  return [(color >> 16) & 255, (color >> 8) & 255, color & 255];
+}
+
+/* ── NOISE ───────────────────────────────────────────────── */
+
+function makeNoise(seed: number) {
+  const perm = new Uint8Array(512);
+  const p = Array.from({ length: 256 }, (_, i) => i);
+  let s = seed >>> 0 || 1;
+  for (let i = 255; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    const j = s % (i + 1);
+    [p[i], p[j]] = [p[j]!, p[i]!];
+  }
+  for (let i = 0; i < 512; i++) perm[i] = p[i & 255]!;
+  const rnd = (x: number, y: number, z: number) =>
+    perm[(perm[(perm[x & 255]! + y) & 255]! + z) & 255]! / 255;
+  const fade = (t: number) => t * t * (3 - 2 * t);
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+  function noise(x: number, y: number, z: number) {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const xf = fade(x - xi), yf = fade(y - yi), zf = fade(z - zi);
+    const c = (dx: number, dy: number, dz: number) => rnd(xi + dx, yi + dy, zi + dz);
+    return lerp(
+      lerp(lerp(c(0, 0, 0), c(1, 0, 0), xf), lerp(c(0, 1, 0), c(1, 1, 0), xf), yf),
+      lerp(lerp(c(0, 0, 1), c(1, 0, 1), xf), lerp(c(0, 1, 1), c(1, 1, 1), xf), yf),
+      zf,
+    );
+  }
+  function fbm(x: number, y: number, z: number, oct = 5) {
+    let sum = 0, amp = 0.5, f = 1, norm = 0;
+    for (let i = 0; i < oct; i++) {
+      sum += amp * noise(x * f, y * f, z * f);
+      norm += amp;
+      amp *= 0.5;
+      f *= 2.03;
+    }
+    return sum / norm;
+  }
+  return { noise, fbm };
+}
+
+/**
+ * Render a seamless equirectangular map. `shade(u, v, nx, ny, nz)` receives the
+ * unit-sphere direction for each pixel and returns [r, g, b].
+ */
+function paint(
+  w: number,
+  h: number,
+  shade: (u: number, v: number, x: number, y: number, z: number) => [number, number, number],
+) {
+  const { c, ctx } = makeCtx(w, h);
+  const img = ctx.createImageData(w, h);
+  const d = img.data;
+  for (let j = 0; j < h; j++) {
+    const v = j / (h - 1);
+    const lat = (0.5 - v) * Math.PI;
+    const cy = Math.sin(lat), cr = Math.cos(lat);
+    for (let i = 0; i < w; i++) {
+      const u = i / w;
+      const lon = u * Math.PI * 2;
+      const [r, g, b] = shade(u, v, cr * Math.cos(lon), cy, cr * Math.sin(lon));
+      const k = (j * w + i) * 4;
+      d[k] = r;
+      d[k + 1] = g;
+      d[k + 2] = b;
+      d[k + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return c;
+}
+
+const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+const mixC = (a: number[], b: number[], t: number): [number, number, number] => [
+  mix(a[0]!, b[0]!, t),
+  mix(a[1]!, b[1]!, t),
+  mix(a[2]!, b[2]!, t),
+];
+const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
+const smooth = (a: number, b: number, t: number) => {
+  const x = clamp01((t - a) / (b - a));
+  return x * x * (3 - 2 * x);
+};
+
 /* ── SURFACES ────────────────────────────────────────────── */
 
+const EARTH_SEA_LEVEL = 0.52;
+
+function earthHeight(n: ReturnType<typeof makeNoise>, x: number, y: number, z: number) {
+  const warp = n.fbm(x * 1.5 + 7, y * 1.5, z * 1.5, 3) - 0.5;
+  return n.fbm(x * 1.8 + warp, y * 1.8 + warp, z * 1.8, 6);
+}
+
 function earthTexture() {
-  const { c, ctx } = makeCtx(1024, 512);
-  const ocean = ctx.createLinearGradient(0, 0, 0, 512);
-  ocean.addColorStop(0, "#0a2f5c");
-  ocean.addColorStop(0.5, "#0d4d8a");
-  ocean.addColorStop(1, "#0a2f5c");
-  ctx.fillStyle = ocean;
-  ctx.fillRect(0, 0, 1024, 512);
+  const n = makeNoise(42);
+  return finish(
+    paint(1024, 512, (_u, v, x, y, z) => {
+      const h = earthHeight(n, x, y, z);
+      const lat = Math.abs(v - 0.5) * 2;
+      let col: [number, number, number];
+      if (h < EARTH_SEA_LEVEL) {
+        const depth = smooth(0.3, EARTH_SEA_LEVEL, h);
+        col = mixC([6, 28, 70], [22, 92, 150], depth);
+      } else {
+        const t = smooth(EARTH_SEA_LEVEL, 0.75, h);
+        const dry = n.fbm(x * 3 + 20, y * 3, z * 3, 3);
+        const green = mixC([52, 104, 46], [34, 74, 36], t);
+        const desert = mixC([170, 145, 96], [120, 96, 64], t);
+        col = mixC(green, desert, smooth(0.5, 0.65, dry) * (1 - smooth(0.55, 0.8, lat)));
+        col = mixC(col, [120, 110, 100], smooth(0.68, 0.8, h));
+      }
+      const ice = smooth(0.8, 0.9, lat + (n.noise(x * 8, y * 8, z * 8) - 0.5) * 0.12);
+      return mixC(col, [236, 244, 252], ice);
+    }),
+  );
+}
 
-  const landShapes: [number, number, number, number, number][] = [
-    [180, 140, 130, 95, 0.3],
-    [380, 95, 90, 65, 0.1],
-    [510, 195, 110, 85, 0.5],
-    [295, 305, 75, 55, 0.8],
-    [610, 135, 68, 52, 0.2],
-    [145, 255, 55, 42, 0.9],
-    [720, 215, 95, 72, 0.15],
-    [820, 145, 72, 58, 0.4],
-    [450, 350, 60, 42, 0.7],
-    [100, 180, 40, 32, 0.6],
-    [930, 280, 55, 45, 0.3],
-  ];
-  landShapes.forEach(([x, y, w, h, rot]) => {
-    ctx.fillStyle = `hsl(${120 + Math.random() * 20},${40 + Math.random() * 15}%,${28 + Math.random() * 8}%)`;
-    ctx.beginPath();
-    ctx.ellipse(x, y, w, h, rot, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = `hsl(${110 + Math.random() * 20},${30 + Math.random() * 10}%,${38 + Math.random() * 6}%)`;
-    ctx.beginPath();
-    ctx.ellipse(
-      x + Math.random() * 20 - 10,
-      y + Math.random() * 20 - 10,
-      w * 0.4,
-      h * 0.4,
-      rot + 0.5,
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
-  });
-
-  const poleT = ctx.createLinearGradient(0, 0, 0, 90);
-  poleT.addColorStop(0, "rgba(240,248,255,0.95)");
-  poleT.addColorStop(1, "rgba(220,235,255,0)");
-  ctx.fillStyle = poleT;
-  ctx.fillRect(0, 0, 1024, 90);
-  const poleB = ctx.createLinearGradient(0, 430, 0, 512);
-  poleB.addColorStop(0, "rgba(220,235,255,0)");
-  poleB.addColorStop(1, "rgba(240,248,255,0.95)");
-  ctx.fillStyle = poleB;
-  ctx.fillRect(0, 430, 1024, 82);
-  return finish(c);
+function earthRoughness() {
+  const n = makeNoise(42);
+  return finish(
+    paint(512, 256, (_u, _v, x, y, z) => {
+      const g = earthHeight(n, x, y, z) < EARTH_SEA_LEVEL ? 70 : 235;
+      return [g, g, g];
+    }),
+    false,
+  );
 }
 
 function cloudTexture() {
+  const n = makeNoise(7);
   const { c, ctx } = makeCtx(1024, 512);
-  ctx.clearRect(0, 0, 1024, 512);
-  for (let i = 0; i < 120; i++) {
-    const x = Math.random() * 1024,
-      y = Math.random() * 512,
-      r = Math.random() * 60 + 20;
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, `rgba(255,255,255,${0.25 + Math.random() * 0.35})`);
-    g.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.ellipse(x, y, r, r * 0.45, Math.random() * Math.PI, 0, Math.PI * 2);
-    ctx.fill();
+  const src = paint(1024, 512, (_u, v, x, y, z) => {
+    const lat = Math.abs(v - 0.5) * 2;
+    const swirl = n.fbm(x * 2, y * 6, z * 2, 3) * 2;
+    const f = n.fbm(x * 3 + swirl, y * 5, z * 3 + swirl, 5);
+    const band = 0.75 + 0.25 * Math.cos(lat * Math.PI * 3);
+    const a = smooth(0.5, 0.72, f * band) * 255;
+    return [a, a, a];
+  });
+  // Convert luminance to alpha on a white layer.
+  const sctx = src.getContext("2d")!;
+  const img = sctx.getImageData(0, 0, 1024, 512);
+  for (let k = 0; k < img.data.length; k += 4) {
+    img.data[k + 3] = img.data[k]!;
+    img.data[k] = img.data[k + 1] = img.data[k + 2] = 255;
   }
+  ctx.putImageData(img, 0, 0);
   return finish(c);
 }
 
-function moonTexture() {
-  const { c, ctx } = makeCtx(512, 512);
-  const bg = ctx.createRadialGradient(256, 200, 0, 256, 256, 320);
-  bg.addColorStop(0, "#c8c8c8");
-  bg.addColorStop(1, "#8a8a8a");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 60; i++) {
-    const x = Math.random() * 512,
-      y = Math.random() * 512,
-      r = Math.random() * 22 + 3;
-    const cg = ctx.createRadialGradient(x - r * 0.2, y - r * 0.2, 0, x, y, r);
-    cg.addColorStop(0, "rgba(60,60,60,0.8)");
-    cg.addColorStop(0.6, "rgba(120,120,120,0.3)");
-    cg.addColorStop(1, "rgba(190,190,190,0)");
-    ctx.fillStyle = cg;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(220,220,220,0.15)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(x, y, r, Math.PI * 1.2, Math.PI * 1.8);
-    ctx.stroke();
+function craterField(seed: number, count: number) {
+  let s = seed;
+  const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  return Array.from({ length: count }, () => {
+    const lon = r() * Math.PI * 2, lat = Math.asin(r() * 2 - 1);
+    return {
+      x: Math.cos(lat) * Math.cos(lon),
+      y: Math.sin(lat),
+      z: Math.cos(lat) * Math.sin(lon),
+      size: 0.04 + Math.pow(r(), 3) * 0.22,
+    };
+  });
+}
+
+/** Height in 0..1 with bowl-shaped craters and raised rims. */
+function rockyHeight(
+  n: ReturnType<typeof makeNoise>,
+  craters: ReturnType<typeof craterField>,
+  x: number,
+  y: number,
+  z: number,
+) {
+  let h = n.fbm(x * 3, y * 3, z * 3, 5);
+  for (const c of craters) {
+    const d = Math.sqrt((x - c.x) ** 2 + (y - c.y) ** 2 + (z - c.z) ** 2) / c.size;
+    if (d < 1.3) {
+      h += d < 1 ? -0.35 * (1 - d * d) : 0.18 * (1 - (d - 1) / 0.3);
+    }
   }
-  return finish(c);
+  return h;
+}
+
+function rockyMaps(base: number[], seed: number) {
+  const n = makeNoise(seed);
+  const craters = craterField(seed, 70);
+  const color = paint(512, 256, (_u, _v, x, y, z) => {
+    const h = rockyHeight(n, craters, x, y, z);
+    const t = clamp01(h * 1.2 - 0.1);
+    return mixC(base.map((c) => c * 0.45), base.map((c) => Math.min(255, c * 1.15)), t);
+  });
+  const bump = paint(512, 256, (_u, _v, x, y, z) => {
+    const g = clamp01(rockyHeight(n, craters, x, y, z)) * 255;
+    return [g, g, g];
+  });
+  return { map: finish(color), bump: finish(bump, false) };
+}
+
+function terrestrialMaps(color: number) {
+  const n = makeNoise(11);
+  const base = rgb(color);
+  const height = (x: number, y: number, z: number) => {
+    const ridge = 1 - Math.abs(n.fbm(x * 2.5, y * 2.5, z * 2.5, 5) * 2 - 1);
+    return ridge * 0.6 + n.fbm(x * 6, y * 6, z * 6, 3) * 0.4;
+  };
+  const map = paint(512, 256, (_u, v, x, y, z) => {
+    const h = height(x, y, z);
+    let col = mixC(base.map((c) => c * 0.35), base.map((c) => Math.min(255, c * 1.05)), h);
+    col = mixC(col, [176, 150, 110], smooth(0.62, 0.8, n.fbm(x * 4 + 3, y * 4, z * 4, 3)));
+    const lat = Math.abs(v - 0.5) * 2;
+    return mixC(col, [230, 238, 240], smooth(0.84, 0.93, lat));
+  });
+  const bump = paint(512, 256, (_u, _v, x, y, z) => {
+    const g = height(x, y, z) * 255;
+    return [g, g, g];
+  });
+  return { map: finish(map), bump: finish(bump, false) };
 }
 
 function gasTexture(color: number) {
-  const hexColor = hex(color);
-  const { c, ctx } = makeCtx(1024, 512);
-  ctx.fillStyle = hexColor;
-  ctx.fillRect(0, 0, 1024, 512);
-  const bands = 28;
-  const r = (color >> 16) & 255,
-    g = (color >> 8) & 255,
-    b = color & 255;
-  for (let i = 0; i < bands; i++) {
-    const y = (i / bands) * 512;
-    const bh = 6 + Math.random() * 24;
-    const factor = 0.6 + Math.random() * 0.8;
-    ctx.fillStyle = `rgba(${Math.min(255, r * factor)},${Math.min(255, g * factor)},${Math.min(255, b * factor)},${0.2 + Math.random() * 0.5})`;
-    ctx.fillRect(0, y, 1024, bh);
-    ctx.strokeStyle = `rgba(255,255,255,${Math.random() * 0.08})`;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    for (let x = 0; x < 1024; x += 8) {
-      const wy = y + Math.sin(x * 0.04) * 3;
-      if (x === 0) ctx.moveTo(x, wy);
-      else ctx.lineTo(x, wy);
-    }
-    ctx.stroke();
-  }
-  const sg = ctx.createRadialGradient(400, 280, 0, 400, 280, 55);
-  sg.addColorStop(0, "rgba(200,100,60,0.7)");
-  sg.addColorStop(1, "rgba(200,100,60,0)");
-  ctx.fillStyle = sg;
-  ctx.beginPath();
-  ctx.ellipse(400, 280, 55, 30, 0, 0, Math.PI * 2);
-  ctx.fill();
-  return finish(c);
+  const n = makeNoise(color & 0xffff);
+  const base = rgb(color);
+  const light = base.map((c) => Math.min(255, c * 1.35 + 40));
+  const dark = base.map((c) => c * 0.45);
+  // A large oval storm, like Jupiter's Great Red Spot.
+  const storm = { lon: 1.9, lat: -0.35, w: 0.32, h: 0.13 };
+  return finish(
+    paint(1024, 512, (u, v, x, y, z) => {
+      const lat = (0.5 - v) * Math.PI;
+      const shear = (n.fbm(x * 2, y * 2, z * 2, 4) - 0.5) * 0.35;
+      const turb = n.fbm(x * 4, y * 16, z * 4, 4);
+      const band = 0.5 + 0.5 * Math.sin((lat + shear) * 14 + turb * 2.2);
+      let col = mixC(dark, light, band * 0.75 + turb * 0.25);
+      let dl = (u * Math.PI * 2 - storm.lon) / storm.w;
+      dl = ((dl % (Math.PI * 2 / storm.w)) + Math.PI * 2 / storm.w) % (Math.PI * 2 / storm.w);
+      if (dl > Math.PI / storm.w) dl -= Math.PI * 2 / storm.w;
+      const sd = Math.hypot(dl, (lat - storm.lat) / storm.h);
+      if (sd < 1.4) {
+        const swirl = n.fbm(x * 12, y * 12, z * 12, 3);
+        col = mixC(col, [196, 96, 64], (1 - smooth(0.6, 1.4, sd)) * (0.6 + swirl * 0.4));
+      }
+      return col;
+    }),
+  );
 }
 
 function iceTexture() {
-  const { c, ctx } = makeCtx(512, 512);
-  const bg = ctx.createLinearGradient(0, 0, 512, 512);
-  bg.addColorStop(0, "#0c5f8a");
-  bg.addColorStop(0.5, "#1a91c8");
-  bg.addColorStop(1, "#5ec4ef");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 20; i++) {
-    ctx.beginPath();
-    ctx.strokeStyle = `rgba(255,255,255,${0.08 + Math.random() * 0.18})`;
-    ctx.lineWidth = Math.random() * 10 + 3;
-    ctx.moveTo(Math.random() * 512, Math.random() * 512);
-    ctx.bezierCurveTo(
-      Math.random() * 512,
-      Math.random() * 512,
-      Math.random() * 512,
-      Math.random() * 512,
-      Math.random() * 512,
-      Math.random() * 512,
-    );
-    ctx.stroke();
-  }
-  const pole = ctx.createRadialGradient(256, 50, 0, 256, 80, 150);
-  pole.addColorStop(0, "rgba(220,240,255,0.7)");
-  pole.addColorStop(1, "rgba(220,240,255,0)");
-  ctx.fillStyle = pole;
-  ctx.fillRect(0, 0, 512, 200);
-  return finish(c);
+  const n = makeNoise(5);
+  return finish(
+    paint(512, 256, (_u, v, x, y, z) => {
+      const f = n.fbm(x * 3, y * 10, z * 3, 4);
+      const col = mixC([12, 95, 138], [94, 196, 239], f);
+      return mixC(col, [220, 240, 255], smooth(0.8, 0.95, Math.abs(v - 0.5) * 2));
+    }),
+  );
 }
 
-function rockyTexture() {
-  const { c, ctx } = makeCtx(256, 256);
-  ctx.fillStyle = "#4a6040";
-  ctx.fillRect(0, 0, 256, 256);
-  for (let i = 0; i < 50; i++) {
-    ctx.fillStyle = `rgba(0,0,0,${0.1 + Math.random() * 0.45})`;
-    ctx.beginPath();
-    ctx.arc(Math.random() * 256, Math.random() * 256, Math.random() * 18 + 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  for (let i = 0; i < 30; i++) {
-    ctx.fillStyle = `rgba(255,255,255,${0.03 + Math.random() * 0.08})`;
-    ctx.beginPath();
-    ctx.arc(Math.random() * 256, Math.random() * 256, Math.random() * 8 + 1, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  return finish(c);
-}
-
-function terrestrialTexture(color: number) {
-  const { c, ctx } = makeCtx(512, 512);
-  ctx.fillStyle = hex(color);
-  ctx.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 80; i++) {
-    const x = Math.random() * 512,
-      y = Math.random() * 512,
-      rx = Math.random() * 40 + 5,
-      ry = rx * (0.3 + Math.random() * 0.7);
-    ctx.fillStyle =
-      Math.random() > 0.5
-        ? `rgba(0,0,0,${0.05 + Math.random() * 0.3})`
-        : `rgba(255,255,255,${0.03 + Math.random() * 0.12})`;
-    ctx.beginPath();
-    ctx.ellipse(x, y, rx, ry, Math.random() * Math.PI, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  return finish(c);
-}
-
+/** Convective granulation; brightness only, tinted by the star's colour in-shader. */
 function starSurfaceTexture(color: number) {
-  const { c, ctx } = makeCtx(512, 512);
-  const baseR = (color >> 16) & 255,
-    baseG = (color >> 8) & 255,
-    baseB = color & 255;
-  ctx.fillStyle = hex(color);
-  ctx.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 300; i++) {
-    const bright = 0.8 + Math.random() * 0.5;
-    ctx.fillStyle = `rgba(${Math.min(255, baseR * bright)},${Math.min(255, baseG * bright * 0.9)},${Math.min(255, baseB * bright * 0.6)},${0.2 + Math.random() * 0.4})`;
-    ctx.beginPath();
-    ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 18 + 4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  const center = ctx.createRadialGradient(256, 256, 0, 256, 256, 180);
-  center.addColorStop(0, "rgba(255,255,240,0.6)");
-  center.addColorStop(1, "rgba(255,255,240,0)");
-  ctx.fillStyle = center;
-  ctx.fillRect(0, 0, 512, 512);
-  return finish(c);
+  const n = makeNoise(color & 0xffff);
+  const base = rgb(color);
+  const hot = base.map((c) => Math.min(255, c * 1.25 + 60));
+  const cool = base.map((c) => c * 0.55);
+  return finish(
+    paint(1024, 512, (_u, _v, x, y, z) => {
+      const cells = 1 - Math.abs(n.noise(x * 22, y * 22, z * 22) * 2 - 1);
+      const large = n.fbm(x * 4, y * 4, z * 4, 4);
+      const t = clamp01(cells * 0.55 + large * 0.6 - 0.05);
+      const spot = smooth(0.7, 0.78, n.fbm(x * 3 + 9, y * 3, z * 3, 3));
+      return mixC(mixC(cool, hot, t), base.map((c) => c * 0.25), spot * 0.8);
+    }),
+  );
 }
 
 /* ── SPRITES ─────────────────────────────────────────────── */
@@ -283,66 +332,97 @@ function glowSprite(color: number) {
   return finish(c);
 }
 
+/** Soft corona with streamers rather than a lens-flare cross. */
 function flareSprite(color: number) {
   const { c, ctx } = makeCtx(512, 512);
   const h = hex(color);
-  const hg = ctx.createLinearGradient(0, 256, 512, 256);
-  hg.addColorStop(0, "rgba(0,0,0,0)");
-  hg.addColorStop(0.5, h + "cc");
-  hg.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = hg;
-  ctx.fillRect(0, 248, 512, 16);
-  const vg = ctx.createLinearGradient(256, 0, 256, 512);
-  vg.addColorStop(0, "rgba(0,0,0,0)");
-  vg.addColorStop(0.5, h + "99");
-  vg.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = vg;
-  ctx.fillRect(248, 0, 16, 512);
-  const core = ctx.createRadialGradient(256, 256, 0, 256, 256, 120);
-  core.addColorStop(0, "rgba(255,255,255,0.85)");
-  core.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.translate(256, 256);
+  for (let i = 0; i < 28; i++) {
+    const a = (i / 28) * Math.PI * 2 + Math.random() * 0.2;
+    const len = 150 + Math.random() * 100;
+    const g = ctx.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len);
+    g.addColorStop(0, h + "55");
+    g.addColorStop(1, h + "00");
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 6 + Math.random() * 14;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(a) * len, Math.sin(a) * len);
+    ctx.stroke();
+  }
+  const core = ctx.createRadialGradient(0, 0, 0, 0, 0, 200);
+  core.addColorStop(0, "rgba(255,255,255,0.5)");
+  core.addColorStop(0.35, h + "44");
+  core.addColorStop(1, h + "00");
   ctx.fillStyle = core;
-  ctx.fillRect(0, 0, 512, 512);
+  ctx.fillRect(-256, -256, 512, 512);
   return finish(c);
 }
 
+/** Radial ring profile (u = inner → outer) with fine banding and a Cassini gap. */
 function ringSprite(color: number) {
-  const { c, ctx } = makeCtx(512, 64);
-  const h = hex(color);
-  const g = ctx.createLinearGradient(0, 0, 512, 0);
-  g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(0.08, h + "aa");
-  g.addColorStop(0.35, h + "44");
-  g.addColorStop(0.5, h + "88");
-  g.addColorStop(0.75, h + "33");
-  g.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 512, 64);
+  const { c, ctx } = makeCtx(1024, 4);
+  const base = rgb(color).map((v) => Math.min(255, v * 0.7 + 70));
+  const img = ctx.createImageData(1024, 4);
+  for (let i = 0; i < 1024; i++) {
+    const u = i / 1023;
+    const fine = 0.55 + 0.45 * Math.sin(u * 180 + Math.sin(u * 37) * 3);
+    let a = smooth(0, 0.06, u) * (1 - smooth(0.9, 1, u)) * (0.35 + 0.65 * fine);
+    if (u > 0.6 && u < 0.66) a *= 0.08; // Cassini division
+    if (u < 0.25) a *= 0.45; // faint inner C ring
+    for (let r = 0; r < 4; r++) {
+      const k = (r * 1024 + i) * 4;
+      img.data[k] = base[0]! * (0.8 + fine * 0.2);
+      img.data[k + 1] = base[1]! * (0.8 + fine * 0.2);
+      img.data[k + 2] = base[2]! * (0.8 + fine * 0.2);
+      img.data[k + 3] = a * 230;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
   return finish(c);
 }
 
 /* ── PUBLIC API ──────────────────────────────────────────── */
 
-export function surfaceTexture(bodyType: BodyType, color: number): THREE.Texture {
+export interface SurfaceMaps {
+  map: THREE.Texture;
+  bump?: THREE.Texture;
+  roughness?: THREE.Texture;
+}
+
+const mapCache = new Map<string, SurfaceMaps>();
+
+export function surfaceMaps(bodyType: BodyType, color: number): SurfaceMaps {
   const key = `surface:${bodyType}:${color}`;
-  return cached(key, () => {
-    switch (bodyType) {
-      case "earth":
-        return earthTexture();
-      case "moon":
-        return moonTexture();
-      case "rocky":
-        return rockyTexture();
-      case "ice":
-        return iceTexture();
-      case "gas":
-        return gasTexture(color);
-      case "terrestrial":
-        return terrestrialTexture(color);
-      default:
-        return starSurfaceTexture(color);
-    }
-  });
+  const hit = mapCache.get(key);
+  if (hit) return hit;
+  let maps: SurfaceMaps;
+  switch (bodyType) {
+    case "earth":
+      maps = { map: earthTexture(), roughness: earthRoughness() };
+      break;
+    case "moon":
+      maps = rockyMaps([190, 190, 190], 3);
+      break;
+    case "rocky":
+      maps = rockyMaps([118, 130, 104], 9);
+      break;
+    case "ice":
+      maps = { map: iceTexture() };
+      break;
+    case "gas":
+      maps = { map: gasTexture(color) };
+      break;
+    case "terrestrial":
+      maps = terrestrialMaps(color);
+      break;
+    default:
+      maps = { map: starSurfaceTexture(color) };
+  }
+  Object.values(maps).forEach((t, i) => t && cache.set(`${key}:${i}`, t));
+  mapCache.set(key, maps);
+  return maps;
 }
 
 export const clouds = () => cached("clouds", cloudTexture);
