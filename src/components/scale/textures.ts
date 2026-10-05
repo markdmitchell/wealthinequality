@@ -20,6 +20,7 @@ function cached(key: string, make: () => THREE.Texture): THREE.Texture {
 export function disposeTextureCache() {
   cache.forEach((t) => t.dispose());
   cache.clear();
+  mapCache.clear();
 }
 
 function makeCtx(w: number, h: number) {
