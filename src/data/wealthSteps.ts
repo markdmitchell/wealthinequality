@@ -285,7 +285,7 @@ export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
 
 
 /** Bodies shown side by side by default in compare mode. */
-export const COMPARE_DEFAULT = [1, 2, 3, 4];
+export const COMPARE_DEFAULT = [1, 2, 3, 5];
 
 export const LUMINOUS: BodyType[] = ["star", "giant-star", "supergiant"];
 
@@ -354,6 +354,19 @@ export const sources: SourceEntry[] = [
     id: "forbes",
     label: "Combined US billionaire wealth",
     detail: "Forbes 400 / Americans for Tax Fairness tallies of aggregate US billionaire wealth.",
+    asOf: "2024",
+  },
+  {
+    id: "billionaire-threshold",
+    label: "A single billionaire",
+    detail: "The $1 billion net-worth threshold used by Forbes and Bloomberg to define a billionaire.",
+    asOf: "Definition",
+  },
+  {
+    id: "dfa-bottom50",
+    label: "Combined wealth of the bottom 50%",
+    detail:
+      "Federal Reserve Distributional Financial Accounts: total net worth held by the bottom half of US households, rounded.",
     asOf: "2024",
   },
   {
