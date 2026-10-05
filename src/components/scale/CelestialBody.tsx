@@ -96,8 +96,8 @@ export function CelestialBody({ step, animate }: Props) {
     const inner = step.radius * 1.35;
     const outer = step.radius * 2.3;
     const g = new THREE.RingGeometry(inner, outer, 160, 1);
-    const pos = g.attributes.position!;
-    const uv = g.attributes.uv!;
+    const pos = g.getAttribute("position");
+    const uv = g.getAttribute("uv");
     const v = new THREE.Vector3();
     for (let i = 0; i < pos.count; i++) {
       v.fromBufferAttribute(pos, i);
