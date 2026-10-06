@@ -97,18 +97,19 @@ export function BodyLabels({ steps, nodes }: Props) {
       }
 
       if (!fits(rect)) {
-        for (let y = safeTop + LABEL_H / 2; y <= safeBottom - LABEL_H / 2; y += LABEL_H + GAP) {
-          const candidate = {
-            x: targetX > size.width / 2 ? safeRight - labelW / 2 : safeLeft + labelW / 2,
-            y,
-            w: labelW,
-            h: LABEL_H,
-          };
-          if (fits(candidate)) {
-            rect = candidate;
-            break;
-          }
+        // Crowded frame (many bodies, small screen): try every slot in a grid
+        // across the safe area, nearest to the target first.
+        const slots: ScreenRect[] = [];
+        const xs = [safeLeft + labelW / 2, safeRight - labelW / 2, (safeLeft + safeRight) / 2];
+        for (let y = safeTop + LABEL_H / 2; y <= safeBottom - LABEL_H / 2; y += LABEL_H + 6) {
+          for (const x of xs) slots.push({ x, y, w: labelW, h: LABEL_H });
         }
+        slots.sort(
+          (a, b) =>
+            Math.hypot(a.x - targetX, a.y - targetY) - Math.hypot(b.x - targetX, b.y - targetY),
+        );
+        const slot = slots.find(fits);
+        if (slot) rect = slot;
       }
 
       placed.push(rect);

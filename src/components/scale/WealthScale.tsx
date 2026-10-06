@@ -52,12 +52,17 @@ export function WealthScale() {
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
 
+  const compareSet = useMemo(
+    () => [...new Set([...COMPARE_DEFAULT, index])].sort((a, b) => a - b),
+    [index],
+  );
+
   const steps = useMemo(
     () =>
       compareMode
-        ? buildAutoSteps(COMPARE_DEFAULT, SPACING_DEFAULT)
+        ? buildAutoSteps(compareSet, SPACING_DEFAULT)
         : buildAnchoredSteps(index),
-    [compareMode, index],
+    [compareMode, index, compareSet],
   );
   const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
@@ -87,7 +92,7 @@ export function WealthScale() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go, index]);
 
-  const compare = useMemo(() => (compareMode ? COMPARE_DEFAULT : null), [compareMode]);
+  const compare = useMemo(() => (compareMode ? compareSet : null), [compareMode, compareSet]);
 
   const backdrop = useMemo(
     () => ({
@@ -129,6 +134,7 @@ export function WealthScale() {
               type="button"
               onClick={() => setCompareMode((v) => !v)}
               aria-pressed={compareMode}
+              aria-label={compareMode ? "Journey" : "Compare"}
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface/85 px-4 text-xs font-semibold text-foreground backdrop-blur-xl transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {compareMode ? (
@@ -136,16 +142,17 @@ export function WealthScale() {
               ) : (
                 <Layers className="size-4" aria-hidden />
               )}
-              {compareMode ? "Journey" : "Compare"}
+              <span className="hidden sm:inline">{compareMode ? "Journey" : "Compare"}</span>
             </button>
             <button
               type="button"
               onClick={() => setAskOpen((v) => !v)}
               aria-pressed={askOpen}
+              aria-label="Ask"
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface/85 px-4 text-xs font-semibold text-foreground backdrop-blur-xl transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <MessageCircleQuestion className="size-4" aria-hidden />
-              Ask
+              <span className="hidden sm:inline">Ask</span>
             </button>
             <button
               type="button"
@@ -178,12 +185,12 @@ export function WealthScale() {
           <section className="rounded-2xl border border-border bg-surface/85 p-5 backdrop-blur-xl sm:p-7">
             <h2 className="text-lg font-bold text-foreground">Side by side</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Four spheres in one frame at true relative scale: the median household, the median
-              home, a top 1% household, and the world's richest person. The first three are already
-              specks — that gap is the whole point.
+              {compareSet.length === 4 ? "Four" : "Five"} spheres in one frame at true relative
+              scale, always including the median household. Smaller ones become tiny specks — that
+              gap is the whole point.
             </p>
             <ul className="mt-4 space-y-1.5 text-xs">
-              {COMPARE_DEFAULT.map((i) => {
+              {compareSet.map((i) => {
                 const s = wealthSteps[i]!;
                 return (
                   <li key={s.title} className="flex items-center gap-2">
