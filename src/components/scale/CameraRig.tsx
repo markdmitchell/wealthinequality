@@ -11,6 +11,8 @@ interface Props {
   compareMode: boolean;
   reducedMotion: boolean;
   onView?: ((viewWidth: number) => void) | undefined;
+  /** Measured height of the phone bottom sheet, so framing clears it. */
+  bottomInset?: number | undefined;
 }
 
 type Controls = {
@@ -31,7 +33,7 @@ function fitDistance(spanX: number, spanY: number, fovDeg: number, aspect: numbe
 
 const CANONICAL_DIRECTION = new THREE.Vector3(0.1, 0.14, 1).normalize();
 
-export function CameraRig({ framed, compareMode, reducedMotion, onView }: Props) {
+export function CameraRig({ framed, compareMode, reducedMotion, onView, bottomInset }: Props) {
   const controlsRef = useRef<Controls | null>(null);
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
@@ -62,7 +64,7 @@ export function CameraRig({ framed, compareMode, reducedMotion, onView }: Props)
 
     // Fit into the region of the viewport the UI does not cover, then shift the
     // aim so the framed bodies sit in that region rather than behind the panels.
-    const layout = getSceneViewportLayout(size.width, size.height);
+    const layout = getSceneViewportLayout(size.width, size.height, bottomInset);
     const padL = layout.left / Math.max(1, size.width);
     const padR = layout.right / Math.max(1, size.width);
     const padT = layout.top / Math.max(1, size.height);
@@ -102,7 +104,7 @@ export function CameraRig({ framed, compareMode, reducedMotion, onView }: Props)
       controls.update();
       flying.current = false;
     }
-  }, [framed, compareMode, reducedMotion, camera, size.width, size.height]);
+  }, [framed, compareMode, reducedMotion, camera, size.width, size.height, bottomInset]);
 
 
   useFrame((state, rawDelta) => {

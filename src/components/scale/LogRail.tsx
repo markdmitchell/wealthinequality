@@ -87,18 +87,21 @@ export function LogRail({ index, onSelect, orientation = "vertical" }: Props) {
 
   return (
     <nav aria-label="Wealth scale steps" className="relative h-[62dvh] w-56">
-      <span className="absolute top-0 bottom-0 left-3 w-px bg-white/15" aria-hidden />
-      {DECADES.map((d) => (
-        <span
-          key={d.label}
-          aria-hidden
-          className="absolute left-0 flex -translate-y-1/2 items-center gap-1"
-          style={{ bottom: `${pct(d.v)}%` }}
-        >
-          <span className="ml-1 block h-px w-4 bg-white/25" />
-          <span className="font-mono text-[0.55rem] text-muted-foreground/70">{d.label}</span>
-        </span>
-      ))}
+      {/* Decade ticks live in their own column, left of the axis, so they keep
+          their true log position and never share space with a step label. */}
+      <div className="absolute inset-y-0 left-0 w-[52px]" aria-hidden>
+        {DECADES.map((d) => (
+          <span
+            key={d.label}
+            className="absolute right-0 flex -translate-y-1/2 items-center gap-1"
+            style={{ bottom: `${pct(d.v)}%` }}
+          >
+            <span className="block h-px w-3 bg-white/25" />
+            <span className="font-mono text-[0.55rem] text-muted-foreground/70">{d.label}</span>
+          </span>
+        ))}
+      </div>
+      <span className="absolute top-0 bottom-0 left-[52px] w-px bg-white/15" aria-hidden />
       {wealthSteps.map((s, i) => {
         const isActive = i === index;
         return (
@@ -107,7 +110,7 @@ export function LogRail({ index, onSelect, orientation = "vertical" }: Props) {
             type="button"
             onClick={() => onSelect(i)}
             aria-current={isActive ? "step" : undefined}
-            className="group absolute left-0 flex min-h-7 -translate-y-1/2 items-center gap-2 rounded-lg pr-2 pl-1.5 text-left text-[0.7rem] font-semibold whitespace-nowrap transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="group absolute left-[52px] flex min-h-7 -translate-y-1/2 items-center gap-2 rounded-lg pr-2 pl-1.5 text-left text-[0.7rem] font-semibold whitespace-nowrap transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             style={{ bottom: `${railPcts[i]}%`, color: isActive ? s.accent : undefined }}
           >
             <span

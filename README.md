@@ -15,7 +15,7 @@ one fixes the problem geometrically: money maps to a sphere's **volume**, so the
 radius grows with the **cube root** of wealth.
 
 ```text
-radius = 10 × ∛(wealth / 192,000)     ← Earth (median household) = radius 10
+radius = 10 × ∛(wealth / 192,900)     ← Earth (median household) = radius 10
 ```
 
 A $250 billion fortune is 1.3 million times the median household by volume, but
@@ -95,14 +95,14 @@ horizontal rail.
 
 | # | Milestone | Wealth | Volume vs median | Radius vs median | Rendered as |
 | --- | --- | --- | --- | --- | --- |
-| 0 | One Dollar | $1 | 1 / 192,000 | 0.017× | Rocky asteroid |
+| 0 | One Dollar | $1 | 1 / 192,900 | 1 / 58 | Rocky asteroid |
 | 1 | **Median US Household** | **$192,900** | **1×** | **1×** | **Earth (anchor)** |
-| 2 | Median US Home | $400,000 | 2.08× | 1.28× | Terrestrial planet |
-| 3 | Top 1% Household | $13,600,000 | 70.8× | 4.14× | Ringed gas giant |
-| 4 | A Single Billionaire | $1,000,000,000 | 5,208× | 17.3× | Ringed gas giant |
-| 5 | The Richest Person | $250,000,000,000 | 1.30 million× | 109× | Yellow dwarf star |
-| 6 | Bottom 50% Combined | $3,800,000,000,000 | 19.8 million× | 270× | Crimson giant star |
-| 7 | All US Billionaires | $7,800,000,000,000 | 40.6 million× | 344× | Red supergiant |
+| 2 | Median US Home | $400,000 | 2.07× | 1.28× | Terrestrial planet |
+| 3 | Top 1% Household | $13,600,000 | 71× | 4.13× | Ringed gas giant |
+| 4 | A Single Billionaire | $1,000,000,000 | 5,184× | 17× | Ringed gas giant |
+| 5 | The Richest Person | $250,000,000,000 | 1.3 million× | 109× | Yellow dwarf star |
+| 6 | Bottom 50% Combined | $3,800,000,000,000 | 19.7 million× | 270× | Crimson giant star |
+| 7 | All US Billionaires | $7,800,000,000,000 | 40.4 million× | 343× | Red supergiant |
 
 Edit everything — values, copy, colors, body type, source key — in
 `src/data/wealthSteps.ts`. The radii, ratios, log rail, callouts, camera framing,
@@ -150,9 +150,9 @@ Gateway.
 - "A Single Billionaire" ($1B) and "Bottom 50% Combined" ($3.8T) are rounded
   benchmark figures — the first is the definition of a billionaire, the second
   a rounded Federal Reserve distributional-accounts total.
-- `BASE_WEALTH`, the constant the geometry is computed from, is 192,000 while the
-  label reads the Federal Reserve's $192,900. The 0.47% difference is invisible
-  at any zoom; sync the constant if you want the math to match the label exactly.
+- `BASE_WEALTH` — the constant every radius and ratio is computed from — is the
+  exact Federal Reserve figure, $192,900, so the arithmetic on screen matches
+  the label down to the dollar.
 - No sphere is ever scaled up for visibility. When a body falls below a pixel it
   stays geometrically true, and the callout points at its real position.
 
