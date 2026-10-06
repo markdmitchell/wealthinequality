@@ -56,6 +56,11 @@ export function SourcesPanel() {
           Figures are rounded for legibility and change over time; billionaire net worth in
           particular is an estimate that moves daily.
         </p>
+        <p className="mt-3 text-xs">
+          <Link to="/sources" className="text-primary underline-offset-2 hover:underline">
+            Open the full data sources page with links and dates →
+          </Link>
+        </p>
       </section>
     </div>
   );

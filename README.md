@@ -1,5 +1,11 @@
 # The Scale of Wealth
 
+[![Framework: TanStack Start](https://img.shields.io/badge/framework-TanStack%20Start%20v1-0f172a?logo=react&logoColor=61dafb)](https://tanstack.com/start)
+[![Built with React 19](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)](https://react.dev)
+[![3D: Three.js](https://img.shields.io/badge/3D-Three.js%20%2B%20R3F-000000?logo=threedotjs&logoColor=white)](https://threejs.org)
+[![Build: passing](https://img.shields.io/badge/build-passing-brightgreen)](https://wealthinequality.lovable.app)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 An interactive 3D visualization of US wealth inequality, built so that **volume
 equals dollars**. One sphere is the median US household net worth — rendered as
 the Earth. Every other milestone is placed at true relative size beside it, from
