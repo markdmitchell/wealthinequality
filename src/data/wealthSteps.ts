@@ -34,7 +34,7 @@ export interface WealthStep extends WealthStepInput {
 }
 
 /** Median US household net worth — the Earth baseline for the whole scene. */
-export const BASE_WEALTH = 192_000;
+export const BASE_WEALTH = 192_900;
 export const BASE_RADIUS = 10;
 export const BASE_INDEX = 1;
 
