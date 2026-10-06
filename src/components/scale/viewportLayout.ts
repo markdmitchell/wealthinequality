@@ -13,13 +13,25 @@ export interface SceneViewportLayout {
   reserved: ScreenRect[];
 }
 
-/** Screen-space boundaries shared by 3D framing and the label overlay. */
-export function getSceneViewportLayout(width: number, height: number): SceneViewportLayout {
+/**
+ * Screen-space boundaries shared by 3D framing and the label overlay.
+ *
+ * `bottomInset` is the measured height of the phone bottom sheet (scale rail +
+ * info card). Passing it keeps spheres and callout plates above a card that is
+ * far taller than any viewport formula could predict; when it is unknown the
+ * narrow layout falls back to a conservative estimate.
+ */
+export function getSceneViewportLayout(
+  width: number,
+  height: number,
+  bottomInset = 0,
+): SceneViewportLayout {
   const wide = width >= 1024;
   const left = wide ? 420 : 20;
   const right = wide ? 210 : 20;
   const top = 104;
-  const bottom = wide ? 48 : Math.min(360, Math.max(250, height * 0.39));
+  const estimate = wide ? 48 : Math.min(360, Math.max(250, height * 0.39));
+  const bottom = wide ? 48 : Math.max(estimate, Math.min(bottomInset, height * 0.62));
 
   return {
     left,

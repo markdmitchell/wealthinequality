@@ -15,6 +15,8 @@ export type LabelNodes = Map<number, CalloutNodes>;
 interface Props {
   steps: WealthStep[];
   nodes: LabelNodes;
+  /** Measured height of the phone bottom sheet, so plates never hide under it. */
+  bottomInset?: number | undefined;
 }
 
 const DESKTOP_W = 176;
@@ -33,13 +35,13 @@ function overlaps(a: ScreenRect, b: ScreenRect): boolean {
  * callout plate nearby. An SVG leader retains the exact projected endpoint even
  * when the sphere is too small for a pixel, so annotation never alters geometry.
  */
-export function BodyLabels({ steps, nodes }: Props) {
+export function BodyLabels({ steps, nodes, bottomInset }: Props) {
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const vec = useRef(new THREE.Vector3());
 
   useFrame(() => {
-    const layout = getSceneViewportLayout(size.width, size.height);
+    const layout = getSceneViewportLayout(size.width, size.height, bottomInset);
     const labelW = size.width < 640 ? MOBILE_W : DESKTOP_W;
     const safeTop = layout.top;
     const safeBottom = size.height - layout.bottom;
