@@ -182,14 +182,14 @@ export function WealthScale() {
 
 
         {compareMode ? (
-          <section className="rounded-2xl border border-border bg-surface/85 p-5 backdrop-blur-xl sm:p-7">
-            <h2 className="text-lg font-bold text-foreground">Side by side</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <section className="rounded-2xl border border-border bg-surface/85 p-4 backdrop-blur-xl sm:p-7">
+            <h2 className="text-base font-bold text-foreground sm:text-lg">Side by side</h2>
+            <p className="mt-2 hidden text-sm sm:block leading-relaxed text-muted-foreground">
               {compareSet.length === 4 ? "Four" : "Five"} spheres in one frame at true relative
               scale, always including the median household. Smaller ones become tiny specks — that
               gap is the whole point.
             </p>
-            <ul className="mt-4 space-y-1.5 text-xs">
+            <ul className="mt-2 space-y-1 text-xs sm:mt-4 sm:space-y-1.5">
               {compareSet.map((i) => {
                 const s = wealthSteps[i]!;
                 return (
@@ -209,7 +209,7 @@ export function WealthScale() {
             <button
               type="button"
               onClick={() => setCompareMode(false)}
-              className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-4 text-xs font-semibold text-foreground transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="mt-3 inline-flex min-h-11 sm:mt-5 items-center gap-2 rounded-full border border-border px-4 text-xs font-semibold text-foreground transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <Route className="size-4" aria-hidden />
               Back to the journey
