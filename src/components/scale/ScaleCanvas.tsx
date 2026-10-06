@@ -15,6 +15,8 @@ interface Props {
   onView?: ((viewWidth: number) => void) | undefined;
   /** Layout rebuilt for the current anchored comparison. */
   steps?: WealthStep[] | undefined;
+  /** Measured height of the phone bottom sheet. */
+  bottomInset?: number | undefined;
 }
 
 interface SceneProps extends Props {
@@ -23,7 +25,16 @@ interface SceneProps extends Props {
   all: WealthStep[];
 }
 
-function Scene({ step, compare, reducedMotion, onView, visible, labelNodes, all }: SceneProps) {
+function Scene({
+  step,
+  compare,
+  reducedMotion,
+  onView,
+  bottomInset,
+  visible,
+  labelNodes,
+  all,
+}: SceneProps) {
   useEffect(() => () => disposeTextureCache(), []);
 
   const framed = useMemo(() => {
@@ -58,12 +69,13 @@ function Scene({ step, compare, reducedMotion, onView, visible, labelNodes, all 
           animate={!reducedMotion}
         />
       ))}
-      <BodyLabels steps={visible} nodes={labelNodes} />
+      <BodyLabels steps={visible} nodes={labelNodes} bottomInset={bottomInset} />
       <CameraRig
         framed={framed}
         compareMode={Boolean(compare?.length)}
         reducedMotion={reducedMotion}
         onView={onView}
+        bottomInset={bottomInset}
       />
     </>
   );

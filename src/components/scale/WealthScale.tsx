@@ -1,5 +1,5 @@
 import { Info, Layers, MessageCircleQuestion, Route, X } from "lucide-react";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   buildAnchoredSteps,
   buildAutoSteps,
@@ -51,6 +51,21 @@ export function WealthScale() {
   const [askOpen, setAskOpen] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
+
+  // The phone bottom sheet (scale rail + info card) is far taller than any
+  // viewport formula predicts, so its real height is measured and shared with
+  // the camera and the callout overlay.
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const [sheetH, setSheetH] = useState(0);
+  useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    const measure = () => setSheetH(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const [picked, setPicked] = useState<number[] | null>(null);
   const defaultSet = useMemo(
@@ -125,6 +140,7 @@ export function WealthScale() {
             steps={steps}
             compare={compare}
             reducedMotion={reducedMotion}
+            bottomInset={sheetH}
           />
 
         </Suspense>
@@ -185,7 +201,10 @@ export function WealthScale() {
       </div>
 
       {/* Info panel: side on desktop, bottom sheet on mobile */}
-      <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 max-h-[64dvh] overflow-y-auto p-3 sm:p-4 lg:inset-x-auto lg:top-1/2 lg:bottom-auto lg:left-8 lg:max-h-none lg:w-[23.5rem] lg:-translate-y-1/2 lg:overflow-visible lg:p-0">
+      <div
+        ref={sheetRef}
+        className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 max-h-[64dvh] overflow-y-auto p-3 sm:p-4 lg:inset-x-auto lg:top-1/2 lg:bottom-auto lg:left-8 lg:max-h-none lg:w-[23.5rem] lg:-translate-y-1/2 lg:overflow-visible lg:p-0"
+      >
         <div className="mb-2 lg:hidden">
           <LogRail index={index} onSelect={go} orientation="horizontal" />
         </div>
