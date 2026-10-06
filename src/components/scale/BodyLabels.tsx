@@ -20,7 +20,7 @@ interface Props {
 }
 
 const DESKTOP_W = 176;
-const MOBILE_W = 144;
+const MOBILE_W = 160;
 const LABEL_H = 62;
 const GAP = 18;
 

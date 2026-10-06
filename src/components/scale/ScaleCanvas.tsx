@@ -148,7 +148,7 @@ export function ScaleCanvas(props: Props) {
                   const current = labelNodes.get(s.index) ?? { plate: null, path: null, dot: null };
                   labelNodes.set(s.index, { ...current, plate: el });
                 }}
-                className="absolute top-0 left-0 w-36 border border-border border-l-2 bg-callout px-3 py-2 text-left shadow-xl backdrop-blur-md transition-transform duration-200 ease-out will-change-transform sm:w-44"
+                className="absolute top-0 left-0 w-40 border border-border border-l-2 bg-callout px-3 py-2 text-left shadow-xl backdrop-blur-md transition-transform duration-200 ease-out will-change-transform sm:w-44"
                 style={{ borderLeftColor: s.accent }}
               >
                 <span className="flex items-center gap-1.5 font-mono text-[0.5rem] font-bold tracking-[0.12em] uppercase" style={{ color: s.accent }}>
