@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { sources, wealthSteps, formatRatio } from "@/data/wealthSteps";
 
 export function SourcesPanel() {
