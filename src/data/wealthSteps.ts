@@ -337,12 +337,14 @@ export const sources: SourceEntry[] = [
     detail:
       "Federal Reserve Survey of Consumer Finances (median net worth $192,900) and Fed Distributional Financial Accounts for the top 1% entry threshold.",
     asOf: "2022 survey, released 2023",
+    url: "https://www.federalreserve.gov/econres/scfindex.htm",
   },
   {
     id: "census-hud",
     label: "Median US home price",
     detail: "Census Bureau / HUD median sales price of houses sold in the United States, rounded.",
     asOf: "2024",
+    url: "https://fred.stlouisfed.org/series/MSPUS",
   },
   {
     id: "billionaire-index",
@@ -350,18 +352,21 @@ export const sources: SourceEntry[] = [
     detail:
       "Bloomberg Billionaires Index / Forbes real-time net worth. This figure moves by tens of billions week to week.",
     asOf: "2025 snapshot",
+    url: "https://www.bloomberg.com/billionaires/",
   },
   {
     id: "forbes",
     label: "Combined US billionaire wealth",
     detail: "Forbes 400 / Americans for Tax Fairness tallies of aggregate US billionaire wealth.",
     asOf: "2024",
+    url: "https://www.forbes.com/forbes-400/",
   },
   {
     id: "billionaire-threshold",
     label: "A single billionaire",
     detail: "The $1 billion net-worth threshold used by Forbes and Bloomberg to define a billionaire.",
     asOf: "Definition",
+    url: "https://www.forbes.com/billionaires/",
   },
   {
     id: "dfa-bottom50",
@@ -369,6 +374,7 @@ export const sources: SourceEntry[] = [
     detail:
       "Federal Reserve Distributional Financial Accounts: total net worth held by the bottom half of US households, rounded.",
     asOf: "2024",
+    url: "https://www.federalreserve.gov/releases/z1/dataviz/dfa/distribute/table/",
   },
   {
     id: "unit",
