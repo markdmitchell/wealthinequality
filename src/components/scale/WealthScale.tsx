@@ -52,12 +52,17 @@ export function WealthScale() {
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
 
+  const compareSet = useMemo(
+    () => [...new Set([...COMPARE_DEFAULT, index])].sort((a, b) => a - b),
+    [index],
+  );
+
   const steps = useMemo(
     () =>
       compareMode
-        ? buildAutoSteps(COMPARE_DEFAULT, SPACING_DEFAULT)
+        ? buildAutoSteps(compareSet, SPACING_DEFAULT)
         : buildAnchoredSteps(index),
-    [compareMode, index],
+    [compareMode, index, compareSet],
   );
   const step = steps[index] ?? steps[0]!;
   const total = wealthSteps.length;
@@ -87,7 +92,7 @@ export function WealthScale() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go, index]);
 
-  const compare = useMemo(() => (compareMode ? COMPARE_DEFAULT : null), [compareMode]);
+  const compare = useMemo(() => (compareMode ? compareSet : null), [compareMode, compareSet]);
 
   const backdrop = useMemo(
     () => ({
@@ -178,12 +183,12 @@ export function WealthScale() {
           <section className="rounded-2xl border border-border bg-surface/85 p-5 backdrop-blur-xl sm:p-7">
             <h2 className="text-lg font-bold text-foreground">Side by side</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Four spheres in one frame at true relative scale: the median household, the median
-              home, a top 1% household, and the world's richest person. The first three are already
-              specks — that gap is the whole point.
+              {compareSet.length === 4 ? "Four" : "Five"} spheres in one frame at true relative
+              scale, always including the median household. Smaller ones become tiny specks — that
+              gap is the whole point.
             </p>
             <ul className="mt-4 space-y-1.5 text-xs">
-              {COMPARE_DEFAULT.map((i) => {
+              {compareSet.map((i) => {
                 const s = wealthSteps[i]!;
                 return (
                   <li key={s.title} className="flex items-center gap-2">
