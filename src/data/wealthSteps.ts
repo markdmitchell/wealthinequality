@@ -327,6 +327,7 @@ export interface SourceEntry {
   label: string;
   detail: string;
   asOf: string;
+  url?: string;
 }
 
 export const sources: SourceEntry[] = [
