@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { sources, wealthSteps, formatRatio } from "@/data/wealthSteps";
 
 export function SourcesPanel() {
@@ -54,6 +55,11 @@ export function SourcesPanel() {
         <p className="mt-4 text-xs text-muted-foreground/70">
           Figures are rounded for legibility and change over time; billionaire net worth in
           particular is an estimate that moves daily.
+        </p>
+        <p className="mt-3 text-xs">
+          <Link to="/sources" className="text-primary underline-offset-2 hover:underline">
+            Open the full data sources page with links and dates →
+          </Link>
         </p>
       </section>
     </div>
