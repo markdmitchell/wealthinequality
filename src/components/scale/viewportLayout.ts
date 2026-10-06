@@ -28,7 +28,7 @@ export function getSceneViewportLayout(
 ): SceneViewportLayout {
   const wide = width >= 1024;
   const left = wide ? 420 : 20;
-  const right = wide ? 210 : 20;
+  const right = wide ? 240 : 20;
   const top = 104;
   const estimate = wide ? 48 : Math.min(360, Math.max(250, height * 0.39));
   const bottom = wide ? 48 : Math.max(estimate, Math.min(bottomInset + 8, height * 0.72));
