@@ -110,7 +110,7 @@ export function LogRail({ index, onSelect, orientation = "vertical" }: Props) {
             type="button"
             onClick={() => onSelect(i)}
             aria-current={isActive ? "step" : undefined}
-            className="group absolute left-0 flex min-h-7 -translate-y-1/2 items-center gap-2 rounded-lg pr-2 pl-1.5 text-left text-[0.7rem] font-semibold whitespace-nowrap transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="group absolute left-[52px] flex min-h-7 -translate-y-1/2 items-center gap-2 rounded-lg pr-2 pl-1.5 text-left text-[0.7rem] font-semibold whitespace-nowrap transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             style={{ bottom: `${railPcts[i]}%`, color: isActive ? s.accent : undefined }}
           >
             <span
