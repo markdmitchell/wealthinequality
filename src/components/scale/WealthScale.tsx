@@ -217,7 +217,7 @@ export function WealthScale() {
             <h2 className="text-base font-bold text-foreground sm:text-lg">Side by side</h2>
             <p className="mt-2 hidden text-sm sm:block leading-relaxed text-muted-foreground">
               Pick any spheres (at least two) to see them in one frame at true relative
-              scale, always including the median household. Smaller ones become tiny specks — that
+              scale, always including the median household. Smaller ones become tiny specks; that
               gap is the whole point.
             </p>
             <div className="mt-3 flex flex-wrap gap-1.5">
@@ -257,7 +257,7 @@ export function WealthScale() {
                         style={{ background: on ? s.accent : "transparent", borderColor: s.accent }}
                       />
                       <span className="text-muted-foreground">
-                        <strong className="text-foreground">{s.title}</strong> — {s.value}
+                        <strong className="text-foreground">{s.title}</strong>: {s.value}
                       </span>
                     </button>
                   </li>

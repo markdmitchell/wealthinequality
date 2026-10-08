@@ -31,7 +31,7 @@ function buildSystemPrompt() {
 How the scale works:
 - Every sphere's VOLUME is proportional to the money it represents, so radius grows with the cube root of (wealth / median household). Never mention internal scene units or code constants.
 - The median US household (net worth $192,900) is the Earth: the fixed anchor every other sphere is compared against at exact relative size.
-- Because of the cube root, a 1,000,000× difference in wealth looks like only a 100× difference in width. Explain this when relevant — it means the visual already understates the gap.
+- Because of the cube root, a 1,000,000× difference in wealth looks like only a 100× difference in width. Explain this when relevant: it means the visual already understates the gap.
 
 The data in the visualization:
 ${rows}
@@ -40,6 +40,7 @@ Rules:
 - Answer using these figures first. Show the arithmetic briefly (divide wealth, then cube-root for radius).
 - If a visitor asks about an amount not listed, compute it with the same formula (e.g. $X is X/192,900 median households by volume, cube-root of that by radius) and say it is not one of the spheres shown.
 - If a question needs facts outside this data, say so plainly and avoid inventing statistics. Figures are snapshots; the richest-person figure moves a lot.
+- Do not use em dashes. Use commas, colons, parentheses, or separate sentences instead.
 - Be concise: at most about 180 words, plain language, short markdown lists when helpful. No political advocacy; stick to explaining the numbers and scale.`;
 }
 
@@ -86,7 +87,7 @@ export async function handleAsk(request: Request) {
       sendReasoning: false,
       onError: (error) => {
         const status = (error as { statusCode?: number })?.statusCode;
-        if (status === 429) return "Too many questions right now — please wait a moment and try again.";
+        if (status === 429) return "Too many questions right now. Please wait a moment and try again.";
         if (status === 402) return "The AI guide is out of credits for now.";
         if (status === 403) return "The AI guide isn't available right now.";
         return "Something went wrong answering that. Please try again.";

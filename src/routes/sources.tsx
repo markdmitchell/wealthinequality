@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { sources, wealthSteps, formatRatio } from "@/data/wealthSteps";
 
-const title = "Data Sources — The Scale of Wealth";
+const title = "Data Sources | The Scale of Wealth";
 const description =
   "Every wealth milestone in the visualization, with its source, citation link, and as-of date.";
 
@@ -36,7 +36,7 @@ function SourcesPage() {
         <h1 className="mt-6 text-3xl font-bold tracking-tight sm:text-4xl">Data sources</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
           Every milestone in the visualization, with the figure used, its source, and the date the
-          figure reflects. Figures are rounded for legibility and change over time — billionaire net
+          figure reflects. Figures are rounded for legibility and change over time; billionaire net
           worth in particular is an estimate that moves daily.
         </p>
 
