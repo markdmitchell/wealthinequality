@@ -51,8 +51,8 @@ export function CompareInset({ step }: Props) {
       {clampedSide && (
         <p className="mt-2 text-[0.55rem] leading-snug text-muted-foreground/80">
           {clampedSide === "ref"
-            ? `The median household is drawn larger than true scale — it is really ${formatRatio(ratio)} smaller across than this step.`
-            : `This step is drawn larger than true scale — it is really ${formatRatio(1 / ratio)} smaller across than the median household.`}
+            ? `The median household is drawn larger than true scale. It is really ${formatRatio(ratio)} smaller across than this step.`
+            : `This step is drawn larger than true scale. It is really ${formatRatio(1 / ratio)} smaller across than the median household.`}
         </p>
       )}
     </section>

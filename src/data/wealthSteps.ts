@@ -27,13 +27,13 @@ export interface WealthStep extends WealthStepInput {
   radius: number;
   /** Centre X. Bodies rest on a shared baseline and nearly touch. */
   x: number;
-  /** Centre Y — every body sits on the plane y = 0. */
+  /** Centre Y: every body sits on the plane y = 0. */
   y: number;
   radiusRatio: number;
   volumeRatio: number;
 }
 
-/** Median US household net worth — the Earth baseline for the whole scene. */
+/** Median US household net worth: the Earth baseline for the whole scene. */
 export const BASE_WEALTH = 192_900;
 export const BASE_RADIUS = 10;
 export const BASE_INDEX = 1;
@@ -55,7 +55,7 @@ const rawSteps: WealthStepInput[] = [
   {
     title: "Median US Household",
     value: "$192,900",
-    desc: "The median US household net worth. Half of all American families have less than this. Here it becomes the Earth — the baseline for everything that follows.",
+    desc: "The median US household net worth. Half of all American families have less than this. Here it becomes the Earth, the baseline for everything that follows.",
     wealth: BASE_WEALTH,
     color: 0x3b82f6,
     accent: "#60a5fa",
@@ -67,7 +67,7 @@ const rawSteps: WealthStepInput[] = [
   {
     title: "Median US Home",
     value: "$400,000",
-    desc: "The typical American home sells for more than twice the typical family's entire net worth — and still only a 1.28× wider sphere.",
+    desc: "The typical American home sells for more than twice the typical family's entire net worth, yet its sphere is only 1.28× wider.",
     wealth: 400_000,
     color: 0x22c55e,
     accent: "#4ade80",
@@ -79,7 +79,7 @@ const rawSteps: WealthStepInput[] = [
   {
     title: "Top 1% Household",
     value: "$13,600,000",
-    desc: "Entering the top 1% takes roughly $13.6M — a ringed gas giant over 4× the radius of the median family's whole net worth.",
+    desc: "Entering the top 1% takes roughly $13.6M. Its sphere is a ringed gas giant over 4× the radius of the median family's whole net worth.",
     wealth: 13_600_000,
     color: 0xa855f7,
     accent: "#c084fc",
@@ -91,7 +91,7 @@ const rawSteps: WealthStepInput[] = [
   {
     title: "A Single Billionaire",
     value: "$1,000,000,000",
-    desc: "The entry ticket to the billionaire club. One billion dollars is more than 5,000 times the median family's net worth — a ringed giant roughly 17× the Earth's width.",
+    desc: "The entry ticket to the billionaire club. One billion dollars is more than 5,000 times the median family's net worth, represented by a ringed giant roughly 17× the Earth's width.",
     wealth: 1_000_000_000,
     color: 0xd6a35c,
     accent: "#f0c27b",
@@ -103,7 +103,7 @@ const rawSteps: WealthStepInput[] = [
   {
     title: "The Richest Person",
     value: "$250,000,000,000",
-    desc: "The world's richest individual. On this scale his wealth becomes the Sun — over a million times the volume of the Earth that stood for the median family.",
+    desc: "The world's richest individual. On this scale his wealth becomes the Sun, over a million times the volume of the Earth that stood for the median family.",
     wealth: 250_000_000_000,
     color: 0xfbbf24,
     accent: "#fde68a",
@@ -115,7 +115,7 @@ const rawSteps: WealthStepInput[] = [
   {
     title: "Bottom 50% Combined",
     value: "$3,800,000,000,000",
-    desc: "The combined net worth of the poorest half of US households — about 66 million families. Together they hold less than half of what roughly 900 billionaires own.",
+    desc: "The combined net worth of the poorest half of US households, about 66 million families. Together they hold less than half of what roughly 900 billionaires own.",
     wealth: 3_800_000_000_000,
     color: 0xb4374a,
     accent: "#f0899a",
@@ -186,21 +186,21 @@ export function buildWealthSteps(spacing: number): WealthStep[] {
 /**
  * Minimum separation between two neighbouring bodies, as a fraction of the
  * currently focused (largest framed) body's radius. Because the camera frames
- * the focus body, this keeps every smaller sphere — and therefore its label —
+ * the focus body, this keeps every smaller sphere (and therefore its label)
  * separated by a roughly constant number of screen pixels.
  */
 export const AUTO_GAP = 0.26;
 
 /**
  * The framed pair may span at most this many focused-body diameters. Beyond it
- * the previous body would leave the shot, and the size comparison — the point of
- * the whole piece — disappears.
+ * the previous body would leave the shot, and the size comparison (the point of
+ * the whole piece) disappears.
  */
 export const SPAN_BUDGET = 2.6;
 
 /**
  * Auto-tuned layout: gaps grow with whatever body is in focus, so tiny spheres
- * fan apart instead of stacking when a giant fills the frame — but gaps between
+ * fan apart instead of stacking when a giant fills the frame, but gaps between
  * bodies that must share the frame are capped so both stay visible.
  */
 export function buildAutoSteps(focus: number[], spacing = SPACING_DEFAULT): WealthStep[] {
@@ -318,7 +318,7 @@ export function ratioSentence(step: WealthStep, prev?: WealthStep): string | nul
   if (!prev) return null;
   const vol = step.wealth / prev.wealth;
   const rad = step.radius / prev.radius;
-  return `${formatRatio(vol)} the volume of ${prev.title.toLowerCase()} — ${formatRatio(rad)} the radius.`;
+  return `${formatRatio(vol)} the volume of ${prev.title.toLowerCase()}, with ${formatRatio(rad)} the radius.`;
 }
 
 
@@ -380,6 +380,6 @@ export const sources: SourceEntry[] = [
     id: "unit",
     label: "One dollar",
     detail: "The unit of the scale.",
-    asOf: "—",
+    asOf: "Not applicable",
   },
 ];

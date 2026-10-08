@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { WealthScale } from "@/components/scale/WealthScale";
 
-const title = "The Scale of Wealth — US Inequality at Solar-System Size";
+const title = "The Scale of Wealth | US Inequality at Solar-System Size";
 const description =
   "An interactive 3D visualization: from $1 to $7.8 trillion, each sphere's volume matches the money. The median US household is the Earth.";
 

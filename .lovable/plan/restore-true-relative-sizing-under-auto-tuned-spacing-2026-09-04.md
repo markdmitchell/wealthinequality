@@ -5,7 +5,7 @@
 Auto-tune fixed the label stacking but broke the framing that carried the size story:
 
 - Step 4 (Top 1%): the focused purple giant sits far right and is clipped by the frame edge, while the previous body (green home sphere) is clipped at the bottom left behind the info panel. The HUD reads "screen width = 7.4 Earths" although the focused sphere alone is 8.3 Earth-diameters across, so the readout and the picture disagree.
-- Step 5 (Richest Person): the Sun fills the frame and the previous body (Top 1%) is entirely off-screen — its label is parked on the right edge. There is nothing left in frame to compare against, which was the whole point of the rebuild.
+- Step 5 (Richest Person): the Sun fills the frame and the previous body (Top 1%) is entirely off-screen: its label is parked on the right edge. There is nothing left in frame to compare against, which was the whole point of the rebuild.
 
 Two causes, both verified in the code:
 
@@ -16,7 +16,7 @@ Two causes, both verified in the code:
 
 **Frame first, then space.** Spacing becomes a function of the frame rather than the sphere:
 
-- Compute the pair to frame (current + previous, or the compare set) and lay out the whole scene as today, but clamp the auto gap so the pair's total span never exceeds a budget — roughly 2.6× the focused sphere's diameter. Below that budget the gap grows with the focus (keeping small spheres and labels apart, as the user asked); above it the gap stops growing, so the previous body always stays inside the shot.
+- Compute the pair to frame (current + previous, or the compare set) and lay out the whole scene as today, but clamp the auto gap so the pair's total span never exceeds a budget: roughly 2.6× the focused sphere's diameter. Below that budget the gap grows with the focus (keeping small spheres and labels apart, as the user asked); above it the gap stops growing, so the previous body always stays inside the shot.
 - Small bodies that would still collide within the budget spread using the existing per-focus floor, since at that zoom their combined width is a tiny fraction of the frame.
 
 **Correct the camera fit.** Rewrite the framing computation to a true bounding-box fit:
@@ -30,11 +30,11 @@ Two causes, both verified in the code:
 
 ## Result
 
-At every step the focused sphere is fully inside the frame with room around it, the previous sphere is also visible — visibly smaller by its true ratio — and the smaller bodies remain separated enough for their labels. Compare mode keeps its own fit over the chosen set.
+At every step the focused sphere is fully inside the frame with room around it, the previous sphere is also visible: visibly smaller by its true ratio: and the smaller bodies remain separated enough for their labels. Compare mode keeps its own fit over the chosen set.
 
 ## Technical notes
 
-- `src/data/wealthSteps.ts`: add a span budget to `buildAutoSteps` — after computing the per-focus floor, cap the gap before the focused body so `focus.x - prev.x` stays within the budget derived from the focused radius.
+- `src/data/wealthSteps.ts`: add a span budget to `buildAutoSteps`: after computing the per-focus floor, cap the gap before the focused body so `focus.x - prev.x` stays within the budget derived from the focused radius.
 - `src/components/scale/CameraRig.tsx`: replace the `spanY = maxY` / `target.y = maxY * 0.45` framing with a full AABB fit and centre-aimed target; keep the `Math.exp` easing, reduced-motion snap, and `onView` reporting untouched.
 - No changes to `calcRadius`, wealth figures, `CelestialBody`, `CompareInset`, or `LogRail`.
 

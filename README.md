@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 An interactive 3D visualization of US wealth inequality, built so that **volume
-equals dollars**. One sphere is the median US household net worth — rendered as
+equals dollars**. One sphere is the median US household net worth, rendered as
 the Earth. Every other milestone is placed at true relative size beside it, from
 a single dollar to the combined wealth of all US billionaires.
 
@@ -25,7 +25,7 @@ radius = 10 × ∛(wealth / 192,900)     ← Earth (median household) = radius 1
 ```
 
 A $250 billion fortune is 1.3 million times the median household by volume, but
-only about 109 times wider — the size of the Sun next to the Earth. The visual
+only about 109 times wider, the size of the Sun next to the Earth. The visual
 therefore *understates* the gap it depicts, and the app says so out loud rather
 than hiding it: a log-scale rail, explicit ratio readouts, and callout lines that
 point at spheres too small to see.
@@ -60,7 +60,7 @@ LOVABLE_API_KEY=your_key_here bun run dev
 ```
 
 Without it the app runs normally and every other feature works; Ask answers with
-"AI is not configured." The key is never shipped to the browser — it is read
+"AI is not configured." The key is never shipped to the browser; it is read
 inside the request handler in `src/lib/ai/ask.server.ts`.
 
 ## Features
@@ -68,10 +68,10 @@ inside the request handler in `src/lib/ai/ask.server.ts`.
 **Journey mode.** Eight steps, advanced with the buttons, the log rail, or the
 left/right arrow keys. Each step frames the selected sphere directly beside the
 median-household Earth at exact relative scale, so the comparison is always the
-same two bodies — the reference never moves or resizes.
+same two bodies; the reference never moves or resizes.
 
 **Compare mode.** A sphere picker: toggle any of the eight bodies in or out of a
-single shared frame, with shortcut presets — **All** (everything except the $1
+single shared frame, with shortcut presets: **All** (everything except the $1
 rock), **Top & Bottom** (the richest person against the bottom 50%), and
 **Reset**. At least two spheres stay selected so the frame is always a
 comparison. The camera refits itself to whatever is active.
@@ -94,7 +94,7 @@ inflated.
 
 **Considerate defaults.** Respects `prefers-reduced-motion` (the camera snaps
 instead of flying), degrades gracefully when WebGL is unavailable, and re-lays
-out for phones — icon-only header buttons, a compact compare sheet, and a
+out for phones with icon-only header buttons, a compact compare sheet, and a
 horizontal rail.
 
 ## The data
@@ -110,7 +110,7 @@ horizontal rail.
 | 6 | Bottom 50% Combined | $3,800,000,000,000 | 19.7 million× | 270× | Crimson giant star |
 | 7 | All US Billionaires | $7,800,000,000,000 | 40.4 million× | 343× | Red supergiant |
 
-Edit everything — values, copy, colors, body type, source key — in
+Edit all values, copy, colors, body types, and source keys in
 `src/data/wealthSteps.ts`. The radii, ratios, log rail, callouts, camera framing,
 AI system prompt, and source list are all derived from that one file, so adding
 or removing a step updates the whole app.
@@ -121,8 +121,8 @@ or removing a step updates the whole app.
 src/
   data/wealthSteps.ts        Single source of truth: figures, copy, sources, layout math
   routes/
-    index.tsx                "/" — renders WealthScale (client-only, ssr: false)
-    api/ask.ts               POST /api/ask — streams the AI answer
+    index.tsx                "/": renders WealthScale (client-only, ssr: false)
+    api/ask.ts               POST /api/ask: streams the AI answer
   components/scale/
     WealthScale.tsx          App shell: state, header, panels, keyboard
     ScaleCanvas.tsx          R3F canvas; decides which bodies are in frame
@@ -154,9 +154,9 @@ Gateway.
 - Figures are snapshots, not live. The richest-person number moves by tens of
   billions between weeks; the source panel records each as-of date.
 - "A Single Billionaire" ($1B) and "Bottom 50% Combined" ($3.8T) are rounded
-  benchmark figures — the first is the definition of a billionaire, the second
+  benchmark figures: the first is the definition of a billionaire, the second
   a rounded Federal Reserve distributional-accounts total.
-- `BASE_WEALTH` — the constant every radius and ratio is computed from — is the
+- `BASE_WEALTH`, the constant every radius and ratio is computed from, is the
   exact Federal Reserve figure, $192,900, so the arithmetic on screen matches
   the label down to the dollar.
 - No sphere is ever scaled up for visibility. When a body falls below a pixel it
