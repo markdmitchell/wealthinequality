@@ -4,8 +4,11 @@ import { z } from "zod";
 import {
 
   formatRatio,
+  formatYears,
+  MEDIAN_INCOME,
   sources,
   wealthSteps,
+  workYears,
 } from "@/data/wealthSteps";
 import {
   createLovableAiGatewayRunIdFetch,
@@ -22,7 +25,9 @@ function buildSystemPrompt() {
       const src = sources.find((x) => x.id === s.source);
       return `- ${s.title}: ${s.value} (wealth ${s.wealth}). Shown as: ${s.bodyType}. Volume vs median household: ${formatRatio(
         s.volumeRatio,
-      )}. Radius vs median household: ${formatRatio(s.radiusRatio)}. Source: ${src?.label ?? s.source} (${src?.asOf ?? "n/a"}).`;
+      )}. Radius vs median household: ${formatRatio(s.radiusRatio)}. Human time: ${formatYears(
+        workYears(s.wealth),
+      )} of median household income. Source: ${src?.label ?? s.source} (${src?.asOf ?? "n/a"}).`;
     })
     .join("\n");
 
