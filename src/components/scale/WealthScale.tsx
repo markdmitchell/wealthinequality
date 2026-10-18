@@ -1,4 +1,4 @@
-import { Info, Layers, MessageCircleQuestion, Route, X } from "lucide-react";
+import { Info, Layers, Route, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   buildAnchoredSteps,
@@ -9,7 +9,6 @@ import {
   wealthSteps,
   workYears,
 } from "@/data/wealthSteps";
-import { AskPanel } from "./AskPanel";
 import { InfoPanel } from "./InfoPanel";
 import { LogRail } from "./LogRail";
 import { NavControls } from "./NavControls";
@@ -50,7 +49,6 @@ export function WealthScale() {
   const [index, setIndex] = useState(1);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
-  const [askOpen, setAskOpen] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const webgl = useWebglSupport();
 
@@ -114,7 +112,6 @@ export function WealthScale() {
       if (e.key === "ArrowLeft") go(index - 1);
       if (e.key === "Escape") {
         setSourcesOpen(false);
-        setAskOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -173,16 +170,6 @@ export function WealthScale() {
                 <Layers className="size-4" aria-hidden />
               )}
               <span className="hidden sm:inline">{compareMode ? "Journey" : "Compare"}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setAskOpen((v) => !v)}
-              aria-pressed={askOpen}
-              aria-label="Ask"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface/85 px-4 text-xs font-semibold text-foreground backdrop-blur-xl transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              <MessageCircleQuestion className="size-4" aria-hidden />
-              <span className="hidden sm:inline">Ask</span>
             </button>
             <button
               type="button"
@@ -295,12 +282,6 @@ export function WealthScale() {
           </>
         )}
       </div>
-
-      {askOpen && (
-        <div className="absolute inset-x-2 top-20 bottom-2 z-30 sm:inset-x-auto sm:right-4 sm:w-[24rem] lg:top-24 lg:bottom-6">
-          <AskPanel onClose={() => setAskOpen(false)} />
-        </div>
-      )}
 
       {webgl === false && (
         <div className="absolute inset-0 z-30 overflow-y-auto bg-background p-6">
