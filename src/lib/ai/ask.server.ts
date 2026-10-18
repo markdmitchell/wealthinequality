@@ -36,6 +36,7 @@ function buildSystemPrompt() {
 How the scale works:
 - Every sphere's VOLUME is proportional to the money it represents, so radius grows with the cube root of (wealth / median household). Never mention internal scene units or code constants.
 - The median US household (net worth $192,900) is the Earth: the fixed anchor every other sphere is compared against at exact relative size.
+- Human time: any amount divided by the median household income (${MEDIAN_INCOME.toLocaleString("en-US")} per year) gives the years a typical family would need to earn it while spending nothing. Use this to make large gaps relatable.
 - Because of the cube root, a 1,000,000× difference in wealth looks like only a 100× difference in width. Explain this when relevant: it means the visual already understates the gap.
 
 The data in the visualization:
