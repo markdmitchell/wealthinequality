@@ -1,4 +1,11 @@
-import { formatRatio, type WealthStep } from "@/data/wealthSteps";
+import {
+  formatRatio,
+  formatYears,
+  MEDIAN_INCOME,
+  timeAnchor,
+  workYears,
+  type WealthStep,
+} from "@/data/wealthSteps";
 
 interface Props {
   step: WealthStep;
@@ -7,6 +14,7 @@ interface Props {
 }
 
 export function InfoPanel({ step, index, total }: Props) {
+  const years = workYears(step.wealth);
   const barPct = Math.min(100, Math.max(2, (Math.log10(step.wealth) / Math.log10(7.8e12)) * 100));
   // Long values (e.g. "$7,800,000,000,000") shrink so they never overflow the card.
   const valueSize =
@@ -60,6 +68,19 @@ export function InfoPanel({ step, index, total }: Props) {
             style={{ width: `${barPct}%`, background: step.accent }}
           />
         </div>
+      </div>
+
+      <div className="mb-5 rounded-xl border border-border bg-white/[0.03] p-3">
+        <p className="mb-1 text-[0.68rem] font-semibold tracking-[0.1em] text-muted-foreground uppercase">
+          In human time
+        </p>
+        <p className="text-base font-bold text-foreground">
+          <span style={{ color: step.accent }}>{formatYears(years)}</span> of work
+        </p>
+        <p className="mt-1 text-xs leading-snug text-muted-foreground">{timeAnchor(years)}</p>
+        <p className="mt-1.5 text-[0.6rem] text-muted-foreground/70">
+          At the median household income of ${MEDIAN_INCOME.toLocaleString("en-US")} a year.
+        </p>
       </div>
 
       <p className="text-sm leading-relaxed text-muted-foreground">{step.desc}</p>

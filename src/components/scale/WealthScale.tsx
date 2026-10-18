@@ -4,8 +4,10 @@ import {
   buildAnchoredSteps,
   buildAutoSteps,
   COMPARE_DEFAULT,
+  formatYears,
   SPACING_DEFAULT,
   wealthSteps,
+  workYears,
 } from "@/data/wealthSteps";
 import { AskPanel } from "./AskPanel";
 import { InfoPanel } from "./InfoPanel";
@@ -258,6 +260,9 @@ export function WealthScale() {
                       />
                       <span className="text-muted-foreground">
                         <strong className="text-foreground">{s.title}</strong>: {s.value}
+                        <span className="block text-[0.62rem] text-muted-foreground/75 sm:inline sm:pl-1">
+                          ({formatYears(workYears(s.wealth))} of median income)
+                        </span>
                       </span>
                     </button>
                   </li>
