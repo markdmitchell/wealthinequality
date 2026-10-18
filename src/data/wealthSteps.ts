@@ -383,3 +383,33 @@ export const sources: SourceEntry[] = [
     asOf: "Not applicable",
   },
 ];
+
+/** Median US household income per year (Census, 2023), the "human time" yardstick. */
+export const MEDIAN_INCOME = 80_610;
+
+/** Years of median household income needed to equal a sum, spending nothing. */
+export function workYears(wealth: number): number {
+  return wealth / MEDIAN_INCOME;
+}
+
+export function formatYears(years: number): string {
+  const secs = years * 365.25 * 24 * 3600;
+  if (secs < 60) return `${secs.toFixed(1)} seconds`;
+  if (secs < 3600) return `${Math.round(secs / 60)} minutes`;
+  if (years < 1) return `${Math.round(years * 12)} months`;
+  if (years < 10) return `${years.toFixed(1)} years`;
+  if (years < 1e6) return `${Math.round(years).toLocaleString("en-US")} years`;
+  return `${(years / 1e6).toFixed(1)} million years`;
+}
+
+/** Where a starting point that many years ago lands in history. */
+export function timeAnchor(years: number): string {
+  const start = 2026 - years;
+  if (years < 1) return "Less than one year of a typical family's pay.";
+  if (years < 10) return `A typical family's entire income since ${Math.round(start)}, with nothing spent.`;
+  if (years < 250) return `Earning since ${Math.round(start)} without spending a cent, longer than any human life.`;
+  if (years < 5_000) return `Earning since ${Math.round(-start)} BCE, before the Roman Empire.`;
+  if (years < 100_000) return `Earning since about ${Math.round(-start).toLocaleString("en-US")} BCE, around the end of the last Ice Age, before farming.`;
+  if (years < 10_000_000) return "Longer than our species has existed. Earning since before the first stone tools.";
+  return "Earning since the age of the dinosaurs.";
+}
