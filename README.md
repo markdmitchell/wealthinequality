@@ -50,19 +50,6 @@ bun run dev       # dev server, http://localhost:8080
 | `bun run format` | Prettier write |
 | `bunx tsgo --noEmit` | Typecheck (the check used during development) |
 
-### Enabling the AI "Ask" panel
-
-The Ask feature is the only part that needs a secret. It calls the Lovable AI
-Gateway server-side, so the key must be present in the server environment:
-
-```bash
-LOVABLE_API_KEY=your_key_here bun run dev
-```
-
-Without it the app runs normally and every other feature works; Ask answers with
-"AI is not configured." The key is never shipped to the browser; it is read
-inside the request handler in `src/lib/ai/ask.server.ts`.
-
 ## Features
 
 **Journey mode.** Eight steps, advanced with the buttons, the log rail, or the
@@ -75,13 +62,6 @@ single shared frame, with shortcut presets: **All** (everything except the $1
 rock), **Top & Bottom** (the richest person against the bottom 50%), and
 **Reset**. At least two spheres stay selected so the frame is always a
 comparison. The camera refits itself to whatever is active.
-
-**AI Q&A.** The **Ask** panel takes free-text questions ("where would $1 billion
-sit?", "how does the bottom 50% compare to all US billionaires?") and streams an
-answer grounded in the same figures the spheres use, showing its arithmetic:
-divide for the volume ratio, cube-root for the width. The system prompt is
-generated from the step data itself, so answers cannot drift from the
-visualization. Conversations persist in the visitor's browser only.
 
 **Sources and method.** A **Sources** panel lists every figure, its citation, and
 its as-of date.
@@ -112,7 +92,7 @@ horizontal rail.
 
 Edit all values, copy, colors, body types, and source keys in
 `src/data/wealthSteps.ts`. The radii, ratios, log rail, callouts, camera framing,
-AI system prompt, and source list are all derived from that one file, so adding
+and source list are all derived from that one file, so adding
 or removing a step updates the whole app.
 
 ## Project structure
@@ -122,7 +102,6 @@ src/
   data/wealthSteps.ts        Single source of truth: figures, copy, sources, layout math
   routes/
     index.tsx                "/": renders WealthScale (client-only, ssr: false)
-    api/ask.ts               POST /api/ask: streams the AI answer
   components/scale/
     WealthScale.tsx          App shell: state, header, panels, keyboard
     ScaleCanvas.tsx          R3F canvas; decides which bodies are in frame
@@ -133,21 +112,16 @@ src/
     LogRail.tsx              Log-scale step rail (vertical on desktop, horizontal on mobile)
     NavControls.tsx          Previous / Next
     SourcesPanel.tsx         Figures, citations, as-of dates
-    AskPanel.tsx             Chat UI for the AI Q&A
     Starfield.tsx            Background stars
     textures.ts              Procedural equirectangular surfaces (Earth, gas giants, stars, rock)
     viewportLayout.ts        Shared safe-area + reserved-panel geometry used by camera and labels
   components/ai-elements/    Conversation / message / prompt-input / shimmer primitives
-  lib/ai/
-    ask.server.ts            System prompt from step data, model call, stream handling
-    run-id.server.ts         Forwards the AI Gateway run-id header for request tracing
   styles.css                 Tailwind v4 theme tokens, including the callout palette
 AGENTS.md                    Conventions for working on this codebase
 ```
 
 Stack: TanStack Start v1 (React 19, Vite, file-based routing), Three.js via
-React Three Fiber and drei, Tailwind CSS v4, the AI SDK against the Lovable AI
-Gateway.
+React Three Fiber and drei, and Tailwind CSS v4.
 
 ## Notes on accuracy
 
