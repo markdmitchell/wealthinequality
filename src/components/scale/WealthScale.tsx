@@ -4,6 +4,7 @@ import {
   buildAnchoredSteps,
   buildAutoSteps,
   COMPARE_DEFAULT,
+  REFERENCE_STEP,
   SPACING_DEFAULT,
   wealthSteps,
 } from "@/data/wealthSteps";
@@ -89,7 +90,7 @@ export function WealthScale() {
         : buildAnchoredSteps(index),
     [compareMode, index, compareSet],
   );
-  const step = steps[index] ?? wealthSteps[1];
+  const step = steps[index] ?? REFERENCE_STEP;
   const total = wealthSteps.length;
 
 
