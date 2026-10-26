@@ -4,11 +4,12 @@ import {
   buildAnchoredSteps,
   buildAutoSteps,
   COMPARE_DEFAULT,
-  formatYears,
+  REFERENCE_STEP,
   SPACING_DEFAULT,
   wealthSteps,
-  workYears,
 } from "@/data/wealthSteps";
+import { Button } from "@/components/ui/button";
+import { ComparePicker } from "./ComparePicker";
 import { InfoPanel } from "./InfoPanel";
 import { LogRail } from "./LogRail";
 import { NavControls } from "./NavControls";
@@ -81,7 +82,6 @@ export function WealthScale() {
     } else cur.add(i);
     setPicked([...cur].sort((a, b) => a - b));
   };
-  const allButDollar = wealthSteps.map((s) => s.index).filter((i) => i !== 0);
 
   const steps = useMemo(
     () =>
@@ -90,7 +90,7 @@ export function WealthScale() {
         : buildAnchoredSteps(index),
     [compareMode, index, compareSet],
   );
-  const step = steps[index] ?? steps[0]!;
+  const step = steps[index] ?? REFERENCE_STEP;
   const total = wealthSteps.length;
 
 
@@ -157,20 +157,21 @@ export function WealthScale() {
         </div>
         <div className="pointer-events-auto flex flex-col items-end gap-2">
           <div className="flex gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => { setCompareMode((v) => !v); setPicked(null); }}
               aria-pressed={compareMode}
               aria-label={compareMode ? "Journey" : "Compare"}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface/85 px-4 text-xs font-semibold text-foreground backdrop-blur-xl transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              variant="outline"
+              className="min-h-11 rounded-full border-border bg-surface/85 px-4 text-xs font-semibold backdrop-blur-xl hover:bg-secondary"
             >
               {compareMode ? (
                 <Route className="size-4" aria-hidden />
               ) : (
                 <Layers className="size-4" aria-hidden />
               )}
-              <span className="hidden sm:inline">{compareMode ? "Journey" : "Compare"}</span>
-            </button>
+              <span>{compareMode ? "Journey" : "Compare"}</span>
+            </Button>
             <button
               type="button"
               onClick={() => setSourcesOpen(true)}
@@ -202,69 +203,12 @@ export function WealthScale() {
 
 
         {compareMode ? (
-          <section className="rounded-2xl border border-border bg-surface/85 p-4 backdrop-blur-xl sm:p-7">
-            <h2 className="text-base font-bold text-foreground sm:text-lg">Side by side</h2>
-            <p className="mt-2 hidden text-sm sm:block leading-relaxed text-muted-foreground">
-              Pick any spheres (at least two) to see them in one frame at true relative
-              scale, always including the median household. Smaller ones become tiny specks; that
-              gap is the whole point.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {[
-                { label: "All", set: allButDollar },
-                { label: "Top & Bottom", set: [5, 6] },
-                { label: "Reset", set: null as number[] | null },
-              ].map((b) => (
-                <button
-                  key={b.label}
-                  type="button"
-                  onClick={() => setPicked(b.set)}
-                  className="min-h-8 rounded-full border border-border px-3 text-[0.68rem] font-semibold text-foreground transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
-                  {b.label}
-                </button>
-              ))}
-            </div>
-            <ul className="mt-2 space-y-0.5 text-xs sm:mt-3">
-              {wealthSteps.map((s) => {
-                const on = compareSet.includes(s.index);
-                const locked = on && compareSet.length <= 2;
-                return (
-                  <li key={s.title}>
-                    <button
-                      type="button"
-                      role="checkbox"
-                      aria-checked={on}
-                      aria-disabled={locked}
-                      title={locked ? "Keep at least two spheres" : undefined}
-                      onClick={() => toggleSphere(s.index)}
-                      className={`flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${on ? "" : "opacity-45"}`}
-                    >
-                      <span
-                        aria-hidden
-                        className="size-2.5 shrink-0 rounded-full border"
-                        style={{ background: on ? s.accent : "transparent", borderColor: s.accent }}
-                      />
-                      <span className="text-muted-foreground">
-                        <strong className="text-foreground">{s.title}</strong>: {s.value}
-                        <span className="block text-[0.62rem] text-muted-foreground/75 sm:inline sm:pl-1">
-                          ({formatYears(workYears(s.wealth))} of median income)
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            <button
-              type="button"
-              onClick={() => { setCompareMode(false); setPicked(null); }}
-              className="mt-3 inline-flex min-h-11 sm:mt-5 items-center gap-2 rounded-full border border-border px-4 text-xs font-semibold text-foreground transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              <Route className="size-4" aria-hidden />
-              Back to the journey
-            </button>
-          </section>
+          <ComparePicker
+            selected={compareSet}
+            onToggle={toggleSphere}
+            onPreset={setPicked}
+            onExit={() => { setCompareMode(false); setPicked(null); }}
+          />
         ) : (
           <>
             <InfoPanel step={step} index={index} total={total} />
