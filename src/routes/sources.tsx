@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { sources, wealthSteps, formatRatio } from "@/data/wealthSteps";
+import { sources, wealthSteps, formatRatio, MEDIAN_INCOME } from "@/data/wealthSteps";
 
 const title = "Data Sources | The Scale of Wealth";
 const description =
-  "Every wealth milestone in the visualization, with its source, citation link, and as-of date.";
+  "Approved 2026 wealth benchmarks, source links, observation-date caveats, and the household-income basis for time comparisons.";
 
 export const Route = createFileRoute("/sources")({
   head: () => ({
@@ -36,8 +36,9 @@ function SourcesPage() {
         <h1 className="mt-6 text-3xl font-bold tracking-tight sm:text-4xl">Data sources</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
           Every milestone in the visualization, with the figure used, its source, and the date the
-          figure reflects. Figures are rounded for legibility and change over time; billionaire net
-          worth in particular is an estimate that moves daily.
+            figure reflects. The 2026 refresh uses approved rounded benchmarks, not live readings.
+            Their underlying observation dates remain unverified unless explicitly stated. The median
+            household anchor retains the Federal Reserve's 2022 survey value.
         </p>
 
         <ol className="mt-10 space-y-4">
@@ -79,6 +80,23 @@ function SourcesPage() {
             );
           })}
         </ol>
+
+        <section className="mt-12">
+          <h2 className="text-xl font-bold">Human-time income basis</h2>
+          <p className="mt-3 font-mono text-sm">${MEDIAN_INCOME.toLocaleString("en-US")} per year</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {sourceById.get("income")?.detail}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">As of {sourceById.get("income")?.asOf}</p>
+          <a
+            href={sourceById.get("income")?.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1 text-sm text-primary underline-offset-2 hover:underline"
+          >
+            Census Bureau income reports <ExternalLink className="h-3 w-3" />
+          </a>
+        </section>
 
         <section className="mt-12">
           <h2 className="text-xl font-bold">Method</h2>

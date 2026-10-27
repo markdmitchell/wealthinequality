@@ -1,4 +1,4 @@
-import { wealthSteps } from "@/data/wealthSteps";
+import { wealthSteps, MAX_WEALTH } from "@/data/wealthSteps";
 
 interface Props {
   index: number;
@@ -8,7 +8,7 @@ interface Props {
 }
 
 const MIN_LOG = 0;
-const MAX_LOG = Math.log10(7.8e12);
+const MAX_LOG = Math.log10(MAX_WEALTH);
 
 const DECADES = [
   { v: 1, label: "$1" },

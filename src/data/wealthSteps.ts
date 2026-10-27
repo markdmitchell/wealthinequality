@@ -66,9 +66,9 @@ const rawSteps: WealthStepInput[] = [
   },
   {
     title: "Median US Home",
-    value: "$400,000",
-    desc: "The typical American home sells for more than twice the typical family's entire net worth, yet its sphere is only 1.28× wider.",
-    wealth: 400_000,
+    value: "$420,000",
+    desc: "At the approved $420,000 benchmark, an American home's sale price is 2.18× the median family's entire net worth, yet its sphere is only 1.30× wider.",
+    wealth: 420_000,
     color: 0x22c55e,
     accent: "#4ade80",
     emoji: "🏠",
@@ -78,15 +78,15 @@ const rawSteps: WealthStepInput[] = [
   },
   {
     title: "Top 1% Household",
-    value: "$13,600,000",
-    desc: "Entering the top 1% takes roughly $13.6M. Its sphere is a ringed gas giant over 4× the radius of the median family's whole net worth.",
-    wealth: 13_600_000,
+    value: "$14,200,000",
+    desc: "The approved top 1% entry benchmark is $14.2M. Its sphere is a ringed gas giant about 4.19× the radius of the median family's whole net worth.",
+    wealth: 14_200_000,
     color: 0xa855f7,
     accent: "#c084fc",
     emoji: "🎩",
     bodyType: "gas",
     bgTint: "#0f001e",
-    source: "scf",
+    source: "top1-threshold",
   },
   {
     title: "A Single Billionaire",
@@ -102,9 +102,9 @@ const rawSteps: WealthStepInput[] = [
   },
   {
     title: "The Richest Person",
-    value: "$250,000,000,000",
-    desc: "The world's richest individual. On this scale his wealth becomes the Sun, over a million times the volume of the Earth that stood for the median family.",
-    wealth: 250_000_000_000,
+    value: "$320,000,000,000",
+    desc: "The approved richest-person benchmark is $320B. On this scale that fortune becomes the Sun, about 1.7 million times the volume of the Earth representing the median family. It is a rounded comparison, not a live valuation.",
+    wealth: 320_000_000_000,
     color: 0xfbbf24,
     accent: "#fde68a",
     emoji: "🚀",
@@ -114,9 +114,9 @@ const rawSteps: WealthStepInput[] = [
   },
   {
     title: "Bottom 50% Combined",
-    value: "$3,800,000,000,000",
-    desc: "The combined net worth of the poorest half of US households, about 66 million families. Together they hold less than half of what roughly 900 billionaires own.",
-    wealth: 3_800_000_000_000,
+    value: "$4,100,000,000,000",
+    desc: "The approved benchmark for the combined net worth of the poorest half of US households is $4.1T. Together they hold half of the $8.2T benchmark for all US billionaires.",
+    wealth: 4_100_000_000_000,
     color: 0xb4374a,
     accent: "#f0899a",
     emoji: "👥",
@@ -126,9 +126,9 @@ const rawSteps: WealthStepInput[] = [
   },
   {
     title: "All US Billionaires",
-    value: "$7,800,000,000,000",
-    desc: "The combined wealth of roughly 900 US billionaires. A red supergiant so enormous the Sun is invisible inside it.",
-    wealth: 7_800_000_000_000,
+    value: "$8,200,000,000,000",
+    desc: "The approved benchmark for all US billionaires' combined wealth is $8.2T, twice the bottom half's combined wealth. Its sphere has about 3× the radius of the richest-person sphere.",
+    wealth: 8_200_000_000_000,
     color: 0xff4040,
     accent: "#ff8080",
     emoji: "👑",
@@ -280,6 +280,9 @@ export function buildAnchoredSteps(selectedIndex: number): WealthStep[] {
 
 export const wealthSteps: WealthStep[] = buildSteps(rawSteps);
 
+/** Derived bounds keep the rail and readouts synchronized with the dataset. */
+export const MAX_WEALTH = Math.max(...wealthSteps.map((step) => step.wealth));
+
 /** The median-household Earth: the reference body that is never removed. */
 export const REFERENCE_STEP: WealthStep = wealthSteps[BASE_INDEX]!;
 
@@ -333,33 +336,40 @@ export interface SourceEntry {
 export const sources: SourceEntry[] = [
   {
     id: "scf",
-    label: "Median household net worth · top 1% threshold",
+    label: "Median household net worth",
     detail:
-      "Federal Reserve Survey of Consumer Finances (median net worth $192,900) and Fed Distributional Financial Accounts for the top 1% entry threshold.",
+      "Federal Reserve Survey of Consumer Finances: median net worth $192,900. The anchor retains the 2022 survey figure, not a 2026 observation.",
     asOf: "2022 survey, released 2023",
     url: "https://www.federalreserve.gov/econres/scfindex.htm",
   },
   {
+    id: "top1-threshold",
+    label: "Top 1% household entry threshold",
+    detail: "Approved rounded benchmark of $14.2M. Federal Reserve wealth-distribution data provide context, but aggregate DFA totals do not directly establish a household entry threshold. This specific benchmark has not been independently verified.",
+    asOf: "2026 benchmark refresh; underlying observation date unverified",
+    url: "https://www.federalreserve.gov/releases/z1/dataviz/dfa/distribute/table/",
+  },
+  {
     id: "census-hud",
     label: "Median US home price",
-    detail: "Census Bureau / HUD median sales price of houses sold in the United States, rounded.",
-    asOf: "2024",
+    detail: "Approved rounded home-sale benchmark of $420,000. Census Bureau / HUD median sales price series via FRED; the quarter supporting this benchmark has not been independently verified.",
+    asOf: "2026 benchmark refresh; underlying observation date unverified",
     url: "https://fred.stlouisfed.org/series/MSPUS",
   },
   {
     id: "billionaire-index",
     label: "Richest individual",
     detail:
-      "Bloomberg Billionaires Index / Forbes real-time net worth. This figure moves by tens of billions week to week.",
-    asOf: "2025 snapshot",
+      "Approved rounded richest-person benchmark of $320B. Bloomberg / Forbes track changing fortunes; this benchmark is not a live reading and its valuation date has not been independently verified.",
+    asOf: "2026 benchmark refresh; underlying valuation date unverified",
     url: "https://www.bloomberg.com/billionaires/",
   },
   {
     id: "forbes",
     label: "Combined US billionaire wealth",
-    detail: "Forbes 400 / Americans for Tax Fairness tallies of aggregate US billionaire wealth.",
-    asOf: "2024",
-    url: "https://www.forbes.com/forbes-400/",
+    detail: "Approved rounded aggregate US billionaire benchmark of $8.2T. Forbes billionaire lists and Americans for Tax Fairness tallies provide context; the tally supporting this figure has not been independently verified. The Forbes 400 alone does not cover all US billionaires.",
+    asOf: "2026 benchmark refresh; underlying tally date unverified",
+    url: "https://www.forbes.com/billionaires/",
   },
   {
     id: "billionaire-threshold",
@@ -372,9 +382,16 @@ export const sources: SourceEntry[] = [
     id: "dfa-bottom50",
     label: "Combined wealth of the bottom 50%",
     detail:
-      "Federal Reserve Distributional Financial Accounts: total net worth held by the bottom half of US households, rounded.",
-    asOf: "2024",
+      "Approved rounded bottom-half wealth benchmark of $4.1T. Federal Reserve Distributional Financial Accounts report this aggregate; the quarter supporting this benchmark has not been independently verified.",
+    asOf: "2026 benchmark refresh; underlying observation date unverified",
     url: "https://www.federalreserve.gov/releases/z1/dataviz/dfa/distribute/table/",
+  },
+  {
+    id: "income",
+    label: "Median annual household income",
+    detail: "Approved annual-income benchmark of $83,180 for human-time comparisons. Census Bureau CPS income reports provide context; this specific figure and its reference year have not been independently verified. Calculations assume no spending or taxes, not achievable savings.",
+    asOf: "2026 benchmark refresh; underlying income year unverified",
+    url: "https://www.census.gov/topics/income-poverty/income.html",
   },
   {
     id: "unit",
@@ -384,8 +401,8 @@ export const sources: SourceEntry[] = [
   },
 ];
 
-/** Median US household income per year (Census, 2023), the "human time" yardstick. */
-export const MEDIAN_INCOME = 80_610;
+/** Approved annual household income benchmark for the 2026 refresh. */
+export const MEDIAN_INCOME = 83_180;
 
 /** Years of median household income needed to equal a sum, spending nothing. */
 export function workYears(wealth: number): number {

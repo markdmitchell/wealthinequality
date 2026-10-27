@@ -16,7 +16,7 @@ Live demo: <https://wealthinequality.lovable.app>
 ## The idea
 
 Most inequality graphics break somewhere between a million and a trillion,
-because a bar that is honest about $1 is invisible next to $7.8 trillion. This
+because a bar that is honest about $1 is invisible next to $8.2 trillion. This
 one fixes the problem geometrically: money maps to a sphere's **volume**, so the
 radius grows with the **cube root** of wealth.
 
@@ -24,8 +24,8 @@ radius grows with the **cube root** of wealth.
 radius = 10 × ∛(wealth / 192,900)     ← Earth (median household) = radius 10
 ```
 
-A $250 billion fortune is 1.3 million times the median household by volume, but
-only about 109 times wider, the size of the Sun next to the Earth. The visual
+A $320 billion fortune is 1.7 million times the median household by volume, but
+only about 118 times wider. It is rendered as a Sun-like star. The visual
 therefore *understates* the gap it depicts, and the app says so out loud rather
 than hiding it: a log-scale rail, explicit ratio readouts, and callout lines that
 point at spheres too small to see.
@@ -83,12 +83,24 @@ horizontal rail.
 | --- | --- | --- | --- | --- | --- |
 | 0 | One Dollar | $1 | 1 / 192,900 | 1 / 58 | Rocky asteroid |
 | 1 | **Median US Household** | **$192,900** | **1×** | **1×** | **Earth (anchor)** |
-| 2 | Median US Home | $400,000 | 2.07× | 1.28× | Terrestrial planet |
-| 3 | Top 1% Household | $13,600,000 | 71× | 4.13× | Ringed gas giant |
+| 2 | Median US Home | $420,000 | 2.18× | 1.30× | Terrestrial planet |
+| 3 | Top 1% Household | $14,200,000 | 74× | 4.19× | Ringed gas giant |
 | 4 | A Single Billionaire | $1,000,000,000 | 5,184× | 17× | Ringed gas giant |
-| 5 | The Richest Person | $250,000,000,000 | 1.3 million× | 109× | Yellow dwarf star |
-| 6 | Bottom 50% Combined | $3,800,000,000,000 | 19.7 million× | 270× | Crimson giant star |
-| 7 | All US Billionaires | $7,800,000,000,000 | 40.4 million× | 343× | Red supergiant |
+| 5 | The Richest Person | $320,000,000,000 | 1.7 million× | 118× | Yellow dwarf star |
+| 6 | Bottom 50% Combined | $4,100,000,000,000 | 21.3 million× | 277× | Crimson giant star |
+| 7 | All US Billionaires | $8,200,000,000,000 | 42.5 million× | 349× | Red supergiant |
+
+The 2026 refresh applies approved rounded benchmarks, not independently verified
+live 2026 observations. Source links provide context; unverified observation
+dates are explicitly labeled on `/sources`. The median household anchor remains
+the official 2022 SCF value. The top 1% entry threshold needs its own verification:
+aggregate DFA totals do not directly establish a household entry threshold.
+
+**Human time.** Each amount is divided by the approved annual household income
+benchmark of **$83,180**. This assumes no spending or taxes, not realistic savings.
+The income benchmark's underlying reference year remains unverified.
+
+Run the dataset regression checks with `bun test src/data/wealthSteps.test.ts`.
 
 Edit all values, copy, colors, body types, and source keys in
 `src/data/wealthSteps.ts`. The radii, ratios, log rail, callouts, camera framing,
@@ -127,7 +139,7 @@ React Three Fiber and drei, and Tailwind CSS v4.
 
 - Figures are snapshots, not live. The richest-person number moves by tens of
   billions between weeks; the source panel records each as-of date.
-- "A Single Billionaire" ($1B) and "Bottom 50% Combined" ($3.8T) are rounded
+- "A Single Billionaire" ($1B) and "Bottom 50% Combined" ($4.1T) are rounded
   benchmark figures: the first is the definition of a billionaire, the second
   a rounded Federal Reserve distributional-accounts total.
 - `BASE_WEALTH`, the constant every radius and ratio is computed from, is the
