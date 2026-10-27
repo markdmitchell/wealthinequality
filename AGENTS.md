@@ -14,3 +14,4 @@
 - The log rail's decade ticks keep their true log positions in a column left of the axis, with step names in a column right of it, so a tick is never moved to dodge a label and the two can never collide.
 - The phone bottom sheet's measured height is passed to `getSceneViewportLayout` as `bottomInset`; camera framing and callout placement must use it, because the sheet is far taller than any viewport estimate.
 - Keep comparison selection controls in `ComparePicker`, using shared Button and Checkbox components and a bounded scroll area so the measured panel leaves space for the scene.
+- Derive scale bounds from the wealth dataset, not literal maxima, so benchmark refreshes keep the log rail and progress readouts synchronized.
